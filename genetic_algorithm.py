@@ -48,9 +48,14 @@ class genetic_algo:
             
             
             
-    def calculate_scores(self, population):
+    def calculate_scores(self, population, pre_calc=[]):
+        if len(pre_calc) == 0:
         #### Iterate over population and fill self.scores
-        scores = [self.apt_function(population[x]) for x in range(len(population))]
+            scores = [self.apt_function(population[x]) for x in range(len(population))]
+        else:
+            scores = list(pre_calc) 
+            scores_to_append = [self.apt_function(population[x]) for x in range(len(population)) if x >= len(pre_calc)]
+            scores = scores + scores_to_append
         return scores
     
    
@@ -216,11 +221,9 @@ class genetic_algo:
             self.population = self.repopulate(selected=select_round[0], selected_scores=select_round[1], dead=select_round[2], dead_scores=select_round[3])
             self.pop_history.append(self.population)
 
-            self.scores = self.calculate_scores(self.population)
+            self.scores = self.calculate_scores(self.population, pre_calc=select_round[1])
 
             
-            #print(self.scores[np.argmax(self.scores)])
-            #print(self.population[np.argmax(self.scores)])
             self.t=t
             print(t)
             self.best.append(self.scores[np.argmax(self.scores)])
@@ -231,4 +234,4 @@ class genetic_algo:
         self.opt_cycle()
         
         
-    
+ 
