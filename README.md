@@ -1,2 +1,2 @@
 # pyPROTEGA
-In silico protein engineering using Genetic Algorithms and pyRosetta
+In silico protein engineering using Genetic Algorithms and rosetta energy calculations
