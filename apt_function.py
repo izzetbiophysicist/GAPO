@@ -57,9 +57,11 @@ def mutate_repack(pose, posi, amino):
     return pose
 
 
-def apt(seq, pose):
+def apt(seq, pose, scorefxn):
  
     ###define starting pose outside of the function
+    scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+    
     
     for i in range(len(seq)):
         pose = mutate_repack(pose, posi=i+1, amino=seq[i])
@@ -67,4 +69,12 @@ def apt(seq, pose):
     ## add pack_relax?
     return score
 
-
+def apt_thread(seq, pose, scorefxn, returning_val):
+ 
+    ###define starting pose outside of the function
+    
+    for i in range(len(seq)):
+        pose = mutate_repack(pose, posi=i+1, amino=seq[i])
+        returning_val [0] = scorefxn(pose)
+    ## add pack_relax?
+    #return score
