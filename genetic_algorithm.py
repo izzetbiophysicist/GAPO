@@ -10,8 +10,33 @@ import numpy as np
 from numpy.random import uniform
 from random import sample
 
+from threading import Thread
+from time import sleep
+from pyrosetta import *
+from rosetta.core.pack.task import TaskFactory
+from rosetta.core.pack.task import operation
+
+pyrosetta.init()
+
+class thread_rosetta:
+    def __init__(self, pop, starting_pose, scorefxn, apt_function):
+        self.threads = list()
+        self.return_results = list()
+        
+        for i in range(len(pop)):
+            print(i)
+            self.return_results.append([None]*1)
+            self.threads.append(Thread(target=apt_function, args=(pop[i], starting_pose, scorefxn, self.return_results[i])))
+
+    def run(self):
+        for i in range(len(self.threads)):
+            print(i)
+            sleep(1)
+            self.threads[i].start()
+
+
 class genetic_algo:
-    def __init__(self, opt_direction, gene_values, gene_type, vector_size, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, n_survivors, tournament_size=0, initial_population=[]):
+    def __init__(self, pose, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, n_survivors, tournament_size=0, initial_population=[]):
         self.population = initial_population
         self.gene_values = gene_values  ### if gene_type = 'continuous' then gene_values should contain the upper and lower bounds
         self.pop_size = pop_size
@@ -26,8 +51,11 @@ class genetic_algo:
         self.n_survivors = n_survivors
         self.opt_direction = opt_direction
         self.vector_size = vector_size
-
-    
+        self.pose = pose
+        self.scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+        self.threads = threads
+        
+        
         ### recalculate pop_size if the initial population is not randomly generated
         if(len(self.population) != 0):
             self.pop_size = len(self.population)
@@ -49,12 +77,25 @@ class genetic_algo:
             
             
     def calculate_scores(self, population, pre_calc=[]):
-        if len(pre_calc) == 0:
+        
+        if len(pre_calc) == 0 and self.threads==False:
         #### Iterate over population and fill self.scores
-            scores = [self.apt_function(population[x]) for x in range(len(population))]
+            scores = [self.apt_function(population[x], self.pose, self.scorefxn) for x in range(len(population))]
+        
+        ## TEST APT-FUNCTION WHEN NOT USING THREADS
+        
+        if len(pre_calc) == 0 and self.threads==True:
+            t1 = thread_rosetta(population, self.pose, self.scorefxn, self.apt_function)
+            t1.run()
+            
+            scores = [t1.return_results[x][0] for x in range(len(t1.return_results))]
+
+            
+            
+            
         else:
             scores = list(pre_calc) 
-            scores_to_append = [self.apt_function(population[x]) for x in range(len(population)) if x >= len(pre_calc)]
+            scores_to_append = [self.apt_function(population[x], self.pose, self.scorefxn) for x in range(len(population)) if x >= len(pre_calc)]
             scores = scores + scores_to_append
         return scores
     
@@ -234,4 +275,3 @@ class genetic_algo:
         self.opt_cycle()
         
         
- 
