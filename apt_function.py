@@ -16,9 +16,36 @@ pyrosetta.init()
 scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
 
 ######### take sequence, mutate PDB, return score
+def pack_relax(starting_pose, scorefxn):
+
+    pose = starting_pose.clone()
+    
+    tf = TaskFactory()
+    tf.push_back(operation.InitializeFromCommandline())
+    tf.push_back(operation.RestrictToRepacking())
+    
+    # Set up a MoveMapFactory
+    mmf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()
+    mmf.all_bb(setting=True)
+    mmf.all_bondangles(setting=True)
+    mmf.all_bondlengths(setting=True)
+    mmf.all_chi(setting=True)
+    mmf.all_jumps(setting=True)
+    mmf.set_cartesian(setting=True)
 
 
-def mutate_repack(pose, posi, amino):
+    fr = pyrosetta.rosetta.protocols.relax.FastRelax(scorefxn_in=scorefxn, standard_repeats=1)
+    fr.cartesian(True)
+    fr.set_task_factory(tf)
+    fr.set_movemap_factory(mmf)
+    fr.min_type("lbfgs_armijo_nonmonotone")
+    fr.apply(pose)
+    return pose
+
+def mutate_repack(starting_pose, posi, amino):
+    
+    pose = starting_pose.clone()
+    
      #Select position to mutate
     mut_posi = pyrosetta.rosetta.core.select.residue_selector.ResidueIndexSelector()
     mut_posi.set_index(posi)
@@ -57,24 +84,26 @@ def mutate_repack(pose, posi, amino):
     return pose
 
 
-def apt(seq, pose, scorefxn):
+def apt(seq, starting_pose, scorefxn):
  
     ###define starting pose outside of the function
     scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
     
     
     for i in range(len(seq)):
-        pose = mutate_repack(pose, posi=i+1, amino=seq[i])
-        score = scorefxn(pose)    
+        starting_pose = mutate_repack(starting_pose, posi=i+1, amino=seq[i])
+        #starting_pose = pack_relax(starting_pose, scorefxn)
+        score = scorefxn(starting_pose)    
     ## add pack_relax?
     return score
 
-def apt_thread(seq, pose, scorefxn, returning_val):
+def apt_thread(seq, starting_pose, scorefxn, returning_val):
  
     ###define starting pose outside of the function
     
     for i in range(len(seq)):
-        pose = mutate_repack(pose, posi=i+1, amino=seq[i])
-        returning_val [0] = scorefxn(pose)
+        starting_pose = mutate_repack(starting_pose, posi=i+1, amino=seq[i])
+        #starting_pose = pack_relax(starting_pose, scorefxn)
+        returning_val [0] = scorefxn(starting_pose)
     ## add pack_relax?
     #return score
