@@ -24,7 +24,7 @@ pyrosetta.init()
 
 
 scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
-starting_pose = pose_from_pdb('/home/lucas/genetic_algo/1lzt.pdb')
+starting_pose = pose_from_pdb('1lzt.pdb')
 starting_pose_seq = [x for x in starting_pose.sequence()]
 gene_values = ['A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y']
 
