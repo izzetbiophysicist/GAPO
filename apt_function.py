@@ -92,7 +92,7 @@ def apt(seq, starting_pose, scorefxn):
     
     for i in range(len(seq)):
         starting_pose = mutate_repack(starting_pose, posi=i+1, amino=seq[i])
-        #starting_pose = pack_relax(starting_pose, scorefxn)
+        starting_pose = pack_relax(starting_pose, scorefxn)
         score = scorefxn(starting_pose)    
     ## add pack_relax?
     return score
@@ -103,7 +103,7 @@ def apt_thread(seq, starting_pose, scorefxn, returning_val):
     
     for i in range(len(seq)):
         starting_pose = mutate_repack(starting_pose, posi=i+1, amino=seq[i])
-        #starting_pose = pack_relax(starting_pose, scorefxn)
+        starting_pose = pack_relax(starting_pose, scorefxn)
         returning_val [0] = scorefxn(starting_pose)
     ## add pack_relax?
     #return score
