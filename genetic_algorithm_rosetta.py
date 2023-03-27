@@ -15,6 +15,7 @@ from time import sleep
 from pyrosetta import *
 from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
+from datetime import datetime
 
 pyrosetta.init()
 
@@ -82,6 +83,8 @@ class genetic_algo:
     def calculate_scores(self, population, pre_calc=[]):
         
         if len(pre_calc) == 0 and self.threads==False:
+            print('CALCULATING SCORES!')
+
         #### Iterate over population and fill self.scores
             scores = [self.apt_function(population[x], self.pose, self.scorefxn) for x in range(len(population))]
         
@@ -272,10 +275,13 @@ class genetic_algo:
         self.pop_history = []
         self.best = []
         self.best_ind = []
+        self.start_time = datetime.now()
         print('start')
 
         
         for t in range(self.n_cycles):
+            print('Running round '+str(t))
+            
             select_round = self.select(self.population, self.scores)
 
             self.population = self.repopulate(selected=select_round[0], selected_scores=select_round[1], dead=select_round[2], dead_scores=select_round[3])
@@ -290,6 +296,9 @@ class genetic_algo:
             self.best_ind.append(self.population[np.argmax(self.scores)])
             self.pop_history.append(self.population)
             self.score_history.append(self.scores)
+            
+            self.finish_time = datetime.now()
+
 
     
     def execute(self):
