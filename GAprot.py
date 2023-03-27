@@ -9,8 +9,6 @@ Created on Mon Feb 13 03:52:23 2023
 import os
 
 
-os.chdir('/home/lucas/genetic_algo/') 
-
 from genetic_algorithm_rosetta import *
 from apt_function import *
 
@@ -50,17 +48,6 @@ GA = genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_val
              vector_size=len(starting_pose_seq), pop_size=len(init_pop), mutation_rate=0.2, segment_fluctuation=0, 
              apt_function=apt, selection_method='tournament', threads=False,
              convergence_threshold=0, n_cycles=20, n_survivors=1, tournament_size=4,
-             initial_population=init_pop)
-
-GA.execute()
-
-
-#### Solve threads!
-
-GA = genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, gene_type='discrete', 
-             vector_size=len(starting_pose_seq), pop_size=len(init_pop), mutation_rate=0.2, segment_fluctuation=0, 
-             apt_function=apt_thread, selection_method='tournament', threads=True,
-             convergence_threshold=0, n_cycles=5, n_survivors=2, tournament_size=4,
              initial_population=init_pop)
 
 GA.execute()
