@@ -17,15 +17,25 @@ genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, 
              convergence_threshold=0, n_cycles=20, n_survivors=1, tournament_size=4,
              initial_population=init_pop)
              
-  #pose = starting PDB structure
-  #opt_direction = selects if the objective function goes up or down
-  #gene_values = Values that vectors can assume
-  #gene_type = Selects between discrete or continuous genes
-  #vector_size = size of the vectors
-  #selection methods = elitist or tournament selection
-  #threahds = parallel processing (not supported)
-  #n_cycles = number of optimization cycles
-  #n_survivor = number of survivors in each selection
-  #tournament_size =number of individuals selected in each tournament
-  #initial_population = An initial population can be given. Otherwise, a random population is created
+  pose = starting PDB structure
+  
+  opt_direction = selects if the objective function goes up or down
+  
+  gene_values = Values that vectors can assume
+  
+  gene_type = Selects between discrete or continuous genes
+  
+  vector_size = size of the vectors
+  
+  selection methods = elitist or tournament selection
+  
+  threahds = parallel processing (not supported)
+  
+  n_cycles = number of optimization cycles
+  
+  n_survivor = number of survivors in each selection
+  
+  tournament_size =number of individuals selected in each tournament
+  
+  initial_population = An initial population can be given. Otherwise, a random population is created
   
