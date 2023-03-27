@@ -1,14 +1,13 @@
 # Genetic algorithm for protein optimization
 In silico protein engineering using Genetic Algorithms and rosetta energy calculations
 
-genetic_algorithm.py = main function
-apt_functions.py = contains the objective functions
+genetic_algorithm.py = contains main function
+apt_functions.py = contains a collection of objective functions for the genetic algorithm
 
-GAprot.py imports both in order to run the optimization
+GAprot.py imports genetic_algorithmpy and apt_functions.py, configures initial population and carries out the optimization
 
 -Threads not supported yet
 
-###########
 ### GA function
 
 genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, gene_type='discrete', 
