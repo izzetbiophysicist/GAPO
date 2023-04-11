@@ -84,6 +84,15 @@ def mutate_repack(starting_pose, posi, amino):
     return pose
 
 
+def apt_benchmark(seq):
+    score=0
+    for i in range(len(seq)):
+        if seq[i] == 'A':
+            score = score+1
+    
+    ## add pack_relax?
+    return score
+
 def apt(seq, starting_pose, scorefxn):
  
     ###define starting pose outside of the function
