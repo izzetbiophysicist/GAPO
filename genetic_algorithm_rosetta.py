@@ -187,7 +187,12 @@ class genetic_algo:
             # Create pandas dict to facilitate sorting
             pop_scores = {'indv': population , 'score': scores}
             init_pop = pd.DataFrame(pop_scores)
-            init_pop = init_pop.sort_values('score', ascending=False)
+            
+            if self.opt_direction == 'up':
+                init_pop = init_pop.sort_values('score', ascending=False)
+            
+            if self.opt_direction == 'down':
+                init_pop = init_pop.sort_values('score', ascending=True)
         
             
             ### Initiate offspring dataframe
@@ -198,8 +203,13 @@ class genetic_algo:
             #### number of tournament rounds are population/2 
             for rounds in range(int(len(population)/2)):
                 to_select = init_pop.iloc[sample(range(len(population)), 2)]               
-                to_select = to_select.sort_values('score', ascending=False)
+                if self.opt_direction == 'up':
+                    to_select = to_select.sort_values('score', ascending=False)
+                
+                if self.opt_direction == 'down':
+                    to_select = to_select.sort_values('score', ascending=True)
     
+                
                 co = self.crossing_over(to_select.iloc[0][0], to_select.iloc[1][0], self.crossing_over_type)
                 for newindv in co:
                     offspring.append(newindv)
@@ -216,7 +226,14 @@ class genetic_algo:
             
             whole_pop = {'indv': population+offspring , 'score': scores+offspring_scores}
             whole_pop = pd.DataFrame(whole_pop)
-            whole_pop = whole_pop.sort_values('score', ascending=False)
+            
+            if self.opt_direction == 'up':
+                whole_pop = whole_pop.sort_values('score', ascending=False)
+            
+            if self.opt_direction == 'down':
+                whole_pop = whole_pop.sort_values('score', ascending=True)
+                
+                
             whole_pop = whole_pop[0:self.pop_size]
 
             return whole_pop['indv'].to_list(), whole_pop['score'].to_list()
