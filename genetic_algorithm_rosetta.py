@@ -40,7 +40,7 @@ class thread_rosetta:
 
 
 class genetic_algo:
-    def __init__(self, pose, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_size=0, initial_population=[]):
+    def __init__(self, pose, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, tournament_size=2, initial_population=[]):
         self.initial_population=initial_population 
         self.population = initial_population
         self.gene_values = gene_values  ### if gene_type = 'continuous' then gene_values should contain the upper and lower bounds
@@ -50,6 +50,7 @@ class genetic_algo:
         self.apt_function = apt_function
         self.selection_method = selection_method
         self.tournament_size = tournament_size
+        self.tournament_cycles = tournament_cycles
         self.convergence_threshold = convergence_threshold
         self.n_cycles = n_cycles
         self.gene_type = gene_type
@@ -60,6 +61,7 @@ class genetic_algo:
         self.threads = threads
         self.benchmark = benchmark
         self.crossing_over_type = crossing_over_type
+        
         
         
         ### recalculate pop_size if the initial population is not randomly generated
@@ -201,8 +203,9 @@ class genetic_algo:
             offspring = []
             
             #### number of tournament rounds are population/2 
-            for rounds in range(int(len(population)/2)):
-                to_select = init_pop.iloc[sample(range(len(population)), 2)]               
+            #for rounds in range(int(len(population)/2)):
+            for rounds in range(self.tournament_cycles):
+                to_select = init_pop.iloc[sample(range(len(population)), self.tournament_size)]               
                 if self.opt_direction == 'up':
                     to_select = to_select.sort_values('score', ascending=False)
                 
