@@ -271,13 +271,17 @@ class genetic_algo:
             self.pop_history.append(self.population)
             self.t=t
             print(t)
-            self.best.append(self.scores[np.argmax(self.scores)])
-            self.best_ind.append(self.population[np.argmax(self.scores)])
+            if self.opt_direction == "up":
+                self.best_ind.append(self.population[np.argmax(self.scores)])
+                self.best.append(self.scores[np.argmax(self.scores)])
+            else:
+                self.best_ind.append(self.population[np.argmin(self.scores)])
+                self.best.append(self.scores[np.argmin(self.scores)])         
             self.pop_history.append(self.population)
             self.score_history.append(self.scores)
             
-            self.finish_time = datetime.now()
-
+        self.finish_time = datetime.now()
+        self.exec_time = self.finish_time - self.start_time
 
     
     def execute(self):
