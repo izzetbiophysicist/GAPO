@@ -47,7 +47,7 @@ init_pop = list(init_pop) + list(new_indiv)
 GA = genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, gene_type='discrete',
              vector_size=len(starting_pose_seq), pop_size=len(init_pop), mutation_rate=0.6, segment_fluctuation=0, 
              apt_function=apt, selection_method='tournament', threads=False,
-             convergence_threshold=0, n_cycles=4, tournament_cycles=np.round(population_size/4), tournament_size=4, benchmark=False, crossing_over_type='mask')
+             convergence_threshold=0, n_cycles=4, tournament_cycles=int(np.round(pop_size/4)), tournament_size=4, benchmark=False, crossing_over_type='mask')
 
 
 GA.execute()
