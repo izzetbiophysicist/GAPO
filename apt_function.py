@@ -77,7 +77,7 @@ def mutate_repack(starting_pose, posi, amino):
     tf.push_back(pyrosetta.rosetta.core.pack.task.operation.OperateOnResidueSubset(aa_to_design, mut_posi))
 
     # Create Packer
-    packer = pyrosetta.rosetta.protocols.minimization_packing.PackRotamersMover()
+    packer = pyrosetta.rosetta.protocols.minimization_packing.PackRotamersMover(scorefxn)
     packer.task_factory(tf) 
     packer.apply(pose)
     
