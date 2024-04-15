@@ -27,7 +27,7 @@ from pyrosetta.rosetta.protocols.docking import setup_foldtree
 from pyrosetta.rosetta.protocols import *
 from rosetta.core.scoring.methods import EnergyMethodOptions
 import pandas as pd
-from Bio import SeqIO
+
 
 from numpy.random import uniform
 from random import sample
@@ -134,31 +134,6 @@ def mutate_repack(starting_pose, posi, amino, scorefxn):
     packer.apply(pose)
     
     return pose
-
-def Read_sequence(fasta):
-    """
-    Read sequences from a FASTA file.
-
-    Parameters:
-    - fasta: Path to the FASTA file
-
-    Returns:
-    A list of sequences extracted from the FASTA file.
-    """
-    # Specify the path to your FASTA file
-    fasta_file = fasta
-
-    # Use SeqIO.parse to read the FASTA file
-    sequences = SeqIO.parse(fasta_file, "fasta")
-    
-    seq_records = [record for record in sequences]
-    
-    seqs = [str(seq.seq) for seq in seq_records]
-    
-    
-    sequences_listed = [[x for x in sequence] for sequence in seqs]
-
-    return sequences_listed
 
 def PDB_pose_dictionairy(pose_to):
     """
