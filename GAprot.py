@@ -28,7 +28,7 @@ pyrosetta.init()
 scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
 
 # Creates pose object from input PDB
-starting_pose = pose_from_pdb('6ane_AF2_relax.pdb')
+starting_pose = pose_from_pdb('1lzt.pdb')
 
 # Relax the starting pose by packing and relaxing it iteratively for 3 times
 starting_pose_relaxed = apt_function.pack_relax(starting_pose = starting_pose, scorefxn = scorefxn, times_to_relax = 3)
