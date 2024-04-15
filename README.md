@@ -52,7 +52,8 @@ License and Downloads links:
 <br />
 [License](https://www.rosettacommons.org/software/license-and-download)
 <br />
-[PyRosetta4 Download]([https://graylab.jhu.edu/download/PyRosetta4/archive/release/](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.linux/PyRosetta4.Release.python310.linux.release-370.tar.bz2)
+[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.linux/PyRosetta4.Release.python310.linux.release-370.tar.bz2)
+
 
 ## Creating a conda env to run GA
 conda create --name GA_env --file requirements.txt
