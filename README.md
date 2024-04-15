@@ -52,22 +52,18 @@ License and Downloads links:
 <br />
 [License](https://www.rosettacommons.org/software/license-and-download)
 <br />
-[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/)
+[PyRosetta4 Download]([https://graylab.jhu.edu/download/PyRosetta4/archive/release/](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.linux/PyRosetta4.Release.python310.linux.release-370.tar.bz2))
 
+## Creating a conda env to run GA
+conda create --name GA_env --file requirements.txt
 
-
-## Installing PyRosetta
+## Installing PyRosetta in Conda ENV
 ### After downloading, unzip PyRosetta's and enter the setup directory to install it
 ```
-tar -xvf PyRosetta[release].tar.bz2
-cd PyRosetta*/setup
-python3 setup.py install
-```
-
-## Installing aditional Python libs
-```
-pip install pandas
-pip install numpy
+tar -xvf PyRosetta4.Release.python310.linux.release-370.tar.bz2
+cd PyRosetta4.Release.python310.linux.release-370/setup
+conda activate GA_env
+python setup.py install
 ```
 
 Additional help for downloading and installing and PyRosetta (source:Sari Sabban youtube channel )
