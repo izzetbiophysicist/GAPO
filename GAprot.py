@@ -8,7 +8,8 @@ Created on Mon Feb 13 03:52:23 2023
 
 import os
 
-from genetic_algorithm_rosetta import *
+#from genetic_algorithm_rosetta import *
+from genetic_algorithm_rosetta import genetic_algo
 from apt_function import *
 import apt_function
 
@@ -20,47 +21,52 @@ import numpy as np
 from numpy.random import uniform
 from random import sample
 
+# Initialize PyRosetta
 pyrosetta.init()
 
-
+# Create a scoring function using the "ref2015_cart.wts" weight set
 scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
-starting_pose = pose_from_pdb('1lzt.pdb')
+
+# Creates pose object from input PDB
+starting_pose = pose_from_pdb('6ane_AF2_relax.pdb')
+
+# Relax the starting pose by packing and relaxing it iteratively for 3 times
+starting_pose_relaxed = apt_function.pack_relax(starting_pose = starting_pose, scorefxn = scorefxn, times_to_relax = 3)
 scorefxn(starting_pose)
-starting_pose_seq = [x for x in starting_pose.sequence()]
+
+# Define a list of single-letter amino acid codes
 gene_values = ['A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y']
-scorefxn(starting_pose)
-pop_size = 100
-vector_size = len(starting_pose_seq)
-init_pop = [list(starting_pose_seq)]
-
-positions_starting_pose = list(range(0,vector_size))
-
-#### Residues to be fixed during optimization and new population generation
-fixed_residues_list = []
+starting_pose_seq = [x for x in starting_pose.sequence()]
 
 
-lista_fixed_rosetta = apt_function.PDB_to_Pose(starting_pose, fixed_residues_list, "A")
 
-#### Residues to be fixed during optimization and new population generation
+# List of residues to be fixed during optimization and population generation
+fixed_residues_list = [1,59,60,61,62,63,64,67,90,91,92,93,94,132,133,134,135,136,137,138,139,156,157,158,159,160,161,177,180,181,182,183,184,187,188,211,212,213,215,247,263,267,268,269,270,271,272]
+# Chain identifier for the fixed residues
+chain = "A"
 
-#lista_fixed_rosetta = [x - 1 for x in lista_fixed_rosetta]
-new_indiv = [[gene_values[int(np.round(uniform(low=0, high=len(gene_values)-1)))] for i in range(vector_size)] for indiv in range(pop_size)]
-
-#### Fixing the fixed positions to the new inds
-for individual in new_indiv:
-    for i in lista_fixed_rosetta:
-        individual[i-1] = starting_pose_seq[i-1]
-
-init_popu = list(new_indiv)
+# Generate an initial population of protein structures for optimization
+init_population, list_fixed_index = apt_function.Generate_random_population(starting_pose = starting_pose, 
+                                                             pop_size = 5,
+                                                             fixed_residues_list = fixed_residues_list,
+                                                             chain = chain)
 
 
-### If using threads, use apt_threads, if not use APT
-
-
-GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = init_popu, gene_values=gene_values, gene_type='discrete',
-             vector_size=len(starting_pose_seq), pop_size=len(init_pop), mutation_rate=0.025, segment_fluctuation=0,
+# Initiates GA object
+GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = init_population, gene_values=gene_values, gene_type='discrete',
+             vector_size=len(starting_pose_seq), pop_size=len(init_population), mutation_rate=0.025, segment_fluctuation=0,
              apt_function=apt, selection_method='tournament', threads=False,
-             convergence_threshold=0, n_cycles=150, tournament_cycles=int(np.round(pop_size/4)), tournament_size=4, benchmark=False, lista_fixed=lista_fixed_rosetta,crossing_over_type='mask', file_name="cond_1.txt", dg_method="fold")
+             convergence_threshold=0, n_cycles=4, tournament_cycles=int(np.round(len(init_population)/4)), tournament_size=2, benchmark=False, 
+             lista_fixed=list_fixed_index, crossing_over_type='mask', file_name="teste_1.txt", dg_method="fold")
 
-
+# Run the Genetic Algorithm
 GA.execute()
+
+
+
+
+
+
+
+
+

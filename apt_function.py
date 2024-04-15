@@ -29,52 +29,84 @@ from rosetta.core.scoring.methods import EnergyMethodOptions
 import pandas as pd
 from Bio import SeqIO
 
+from numpy.random import uniform
+from random import sample
+import numpy as np
+
 
 pyrosetta.init()
 
 
 scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
 
-######### take sequence, mutate PDB, return score
-def pack_relax(starting_pose, scorefxn):
 
+#### FastRelax Protocol
+####
+def pack_relax(starting_pose, scorefxn, times_to_relax):
+    """
+    Perform a fast relaxation protocol on the given pose using PyRosetta's FastRelax.
+
+    Parameters:
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - scorefxn: Score function to evaluate the energy of the structure
+    - times_to_relax: Number of relaxation iterations to perform
+
+    Returns:
+    A PyRosetta Pose object representing the relaxed structure.
+    """
     pose = starting_pose.clone()
-
-    tf = TaskFactory()
-    tf.push_back(operation.InitializeFromCommandline())
-    tf.push_back(operation.RestrictToRepacking())
-
-    # Set up a MoveMapFactory
-    mmf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()
-    mmf.all_bb(setting=True)
-    mmf.all_bondangles(setting=True)
-    mmf.all_bondlengths(setting=True)
-    mmf.all_chi(setting=True)
-    mmf.all_jumps(setting=True)
-    mmf.set_cartesian(setting=True)
-
-
-    fr = pyrosetta.rosetta.protocols.relax.FastRelax(scorefxn_in=scorefxn, standard_repeats=1)
-    fr.cartesian(True)
-    fr.set_task_factory(tf)
-    fr.set_movemap_factory(mmf)
-    fr.min_type("lbfgs_armijo_nonmonotone")
-    fr.apply(pose)
+    
+    for i in range(1, times_to_relax + 1):
+        tf = TaskFactory()
+        tf.push_back(operation.InitializeFromCommandline())
+        tf.push_back(operation.RestrictToRepacking())
+        # Set up a MoveMapFactory
+        mmf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()
+        mmf.all_bb(setting=True)
+        mmf.all_bondangles(setting=True)
+        mmf.all_bondlengths(setting=True)
+        mmf.all_chi(setting=True)
+        mmf.all_jumps(setting=True)
+        mmf.set_cartesian(setting=True)
+    
+        ## Print informations about structure before apply fast relax
+        # display_pose = pyrosetta.rosetta.protocols.fold_from_loops.movers.DisplayPoseLabelsMover()
+        # display_pose.tasks(tf)
+        # display_pose.movemap_factory(mmf)
+        # display_pose.apply(pose)
+    
+        fr = pyrosetta.rosetta.protocols.relax.FastRelax(scorefxn_in=scorefxn, standard_repeats=1)
+        fr.cartesian(True)
+        fr.set_task_factory(tf)
+        fr.set_movemap_factory(mmf)
+        fr.min_type("lbfgs_armijo_nonmonotone")
+        fr.apply(pose)
     return pose
 
 def mutate_repack(starting_pose, posi, amino, scorefxn):
-
+    """
+    Mutate a specific residue in the pose and perform repacking.
+    
+    Parameters:
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - posi: Position of the residue to mutate
+    - amino: Amino acid to mutate to
+    - scorefxn: Score function to evaluate the energy of the structure
+    
+    Returns:
+    A PyRosetta Pose object representing the mutated and repacked structure.
+    """
     pose = starting_pose.clone()
-
+    
      #Select position to mutate
     mut_posi = pyrosetta.rosetta.core.select.residue_selector.ResidueIndexSelector()
     mut_posi.set_index(posi)
-
+    
     #Select neighbor positions
     nbr_selector = pyrosetta.rosetta.core.select.residue_selector.NeighborhoodResidueSelector()
     nbr_selector.set_focus_selector(mut_posi)
     nbr_selector.set_include_focus_in_subset(True)
-
+    
     not_design = pyrosetta.rosetta.core.select.residue_selector.NotResidueSelector(mut_posi)
 
     tf = pyrosetta.rosetta.core.pack.task.TaskFactory()
@@ -98,23 +130,32 @@ def mutate_repack(starting_pose, posi, amino, scorefxn):
 
     # Create Packer
     packer = pyrosetta.rosetta.protocols.minimization_packing.PackRotamersMover(scorefxn)
-    packer.task_factory(tf)
+    packer.task_factory(tf) 
     packer.apply(pose)
-
+    
     return pose
 
 def Read_sequence(fasta):
+    """
+    Read sequences from a FASTA file.
+
+    Parameters:
+    - fasta: Path to the FASTA file
+
+    Returns:
+    A list of sequences extracted from the FASTA file.
+    """
     # Specify the path to your FASTA file
     fasta_file = fasta
 
     # Use SeqIO.parse to read the FASTA file
     sequences = SeqIO.parse(fasta_file, "fasta")
-
+    
     seq_records = [record for record in sequences]
-
+    
     seqs = [str(seq.seq) for seq in seq_records]
-
-
+    
+    
     sequences_listed = [[x for x in sequence] for sequence in seqs]
 
     return sequences_listed
@@ -162,55 +203,135 @@ def PDB_pose_dictionairy(pose_to):
 
     return df_dictionary
 
-def PDB_to_Pose(pose, index_list, chain):
 
+def PDB_to_Pose(pose, index_list, chain):
+    """
+    Map PDB residue indices to Pose residue indices for a specific chain.
+
+    Parameters:
+    - pose: PyRosetta Pose object representing the protein structure
+    - index_list: List of PDB residue indices to map
+    - chain: Chain identifier (e.g., 'A')
+
+    Returns:
+    A list of Pose residue indices corresponding to the given PDB residue indices for the specified chain.
+    """
     df_indexes = PDB_pose_dictionairy(pose)
     lists = list(df_indexes[(df_indexes["IndexPDB"].isin(index_list)) & (df_indexes["Chain"] == chain)]["IndexPose"])
     return lists
 
+
+def Generate_random_population(starting_pose, pop_size, fixed_residues_list, chain):
+    """
+    Generate a random population of protein structures for optimization.
+
+    Parameters:
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - pop_size: Number of individuals in the population
+    - fixed_residues_list: List of residue indices to be fixed during optimization
+    - chain: Chain identifier for fixed residues
+
+    Returns:
+    A tuple containing the initial population and the list of fixed residue indices.
+    """    
+    starting_pose_seq = [x for x in starting_pose.sequence()]
+    gene_values = ['A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y']
+    scorefxn(starting_pose)
+    vector_size = len(starting_pose_seq)
+
+    
+    lista_fixed_rosetta = PDB_to_Pose(starting_pose, fixed_residues_list, chain)
+
+    #### Residues to be fixed during optimization and new population generation
+    new_indiv = [[gene_values[int(np.round(uniform(low=0, high=len(gene_values)-1)))] for i in range(vector_size)] for indiv in range(pop_size)]
+
+    #### Fixing the fixed positions to the new inds
+    for individual in new_indiv:
+        for i in lista_fixed_rosetta:
+            individual[i-1] = starting_pose_seq[i-1]
+
+    init_popu = list(new_indiv)
+    
+    return init_popu, lista_fixed_rosetta
+    
+    
 def apt_benchmark(seq):
+    """
+    Benchmark a sequence for a specific trait.
+
+    Parameters:
+    - seq: Sequence to be benchmarked
+
+    Returns:
+    A benchmark score indicating the strength of the trait in the sequence.
+    """ 
     score=0
     for i in range(len(seq)):
         if seq[i] == 'A':
             score = score+1
-
+    
     ## add pack_relax?
     return score
 
 
 def apt(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
-        ###define starting pose outside of the function
-        scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+    """
+    Perform an optimization process on a protein structure using an adaptive protein threading approach.
 
-        resids, index = Get_residues_from_pose(pose = starting_pose)
+    Parameters:
+    - seq: Target sequence to optimize towards
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - scorefxn: Score function to evaluate the energy of the structure
+    - dg_method: Method to calculate the energy difference (dG)
+    - index_ind: Index identifier
+    - index_cycle: Index cycle
 
-        indexes = index
-        resids_from_seq = resids
+    Returns:
+    The optimized score or dG value for the protein structure.
+    """
+    ###define starting pose outside of the function
+    scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+    
+    resids, index = Get_residues_from_pose(pose = starting_pose)
 
-        to_mutate = Compare_sequences(resids_from_seq, seq, indexes)
-
-        new_pose = starting_pose.clone()
-        for index in to_mutate:
-            new_pose = mutate_repack(starting_pose = new_pose, posi = index, amino = to_mutate[index], scorefxn = scorefxn)
-        pack_relax(starting_pose = new_pose, scorefxn = scorefxn)
-        new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
-        if dg_method == "bind":
-
-            score = Dg_bind(new_pose, "A_D", scorefxn)
-            return score
-        if dg_method == "fold":
-            return scorefxn(new_pose)
-
-        ## add pack_relax?
-        #return score
+    indexes = index
+    resids_from_seq = resids
+    
+    to_mutate = Compare_sequences(resids_from_seq, seq, indexes)
+    
+    new_pose = starting_pose.clone()  
+    for index in to_mutate:
+        new_pose = mutate_repack(starting_pose = new_pose, posi = index, amino = to_mutate[index], scorefxn = scorefxn)
+    pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
+    new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
+    if dg_method == "bind":
+        
+        score = Dg_bind(new_pose, "A_D", scorefxn)
+        return score
+    if dg_method == "fold":
+        return scorefxn(new_pose)
+    
+    ## add pack_relax?
+    #return score
 
 def apt_thread(seq, starting_pose, scorefxn, returning_val):
+    """
+    Perform threading optimization for a sequence.
 
+    Parameters:
+    - seq: Target sequence for threading
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - scorefxn: Score function to evaluate the energy of the structure
+    - returning_val: List to store the result
+
+    Returns:
+    None (Result is stored in the returning_val list).
+    """ 
     ###define starting pose outside of the function
-
+    
     for i in range(len(seq)):
         starting_pose = mutate_repack(starting_pose, posi=i+1, amino=seq[i])
-        starting_pose = pack_relax(starting_pose, scorefxn)
+        starting_pose = pack_relax(starting_pose, scorefxn, times_to_relax = 1)
         returning_val [0] = scorefxn(starting_pose)
     ## add pack_relax?
     #return score
@@ -236,7 +357,7 @@ def unbind(pose, partners, scorefxn):
     trans_mover = rigid.RigidBodyTransMover(pose_dummy,JUMP)
     trans_mover.step_size(STEP_SIZE)
     trans_mover.apply(pose_dummy)
-    pack_relax(pose_dummy, scorefxn)
+    pack_relax(pose_dummy, scorefxn, times_to_relax = 1)
     #### Return a tuple containing:
     #### Pose binded = [0] | Pose separated = [1]
     return pose_binded , pose_dummy
@@ -273,8 +394,7 @@ def Dg_bind(pose, partners, scorefxn):
     """
     pose_dummy = pose.clone()
     unbinded_dummy = unbind(pose_dummy, partners, scorefxn)
-    #unbinded_dummy[1].dump_pdb("./Dumps/unbinded_teste.pdb")
-    #unbinded_dummy[0].dump_pdb("./Dumps/binded_teste.pdb")
+
     return (dG_v2_0(unbinded_dummy[1], unbinded_dummy[0], scorefxn))
 
 def Compare_sequences(before_seq, after_seq, indexes):
@@ -291,7 +411,7 @@ def Compare_sequences(before_seq, after_seq, indexes):
     """
     wt = before_seq
     mut = after_seq
-
+    
     mutation = dict()
     for index, (res1, res2) in enumerate(zip(wt, mut)):
         if res1 != res2:
@@ -309,8 +429,11 @@ def Get_residues_from_pose(pose):
     Returns:
     A tuple containing the chain sequence and a list of residue numbers.
     """
-
+    
     residue_numbers = [residue for residue in range(1, pose.size() + 1)]
     sequence = ''.join([pose.residue(residue).name1() for residue in residue_numbers])
 
+    # residue_numbers = [residue for residue in range(1, pose.size() + 1) if pose.pdb_info().chain(residue) == chain]
+    # chain_sequence = ''.join([pose.residue(residue).name1() for residue in residue_numbers])
+    
     return sequence, residue_numbers
