@@ -50,6 +50,7 @@ genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, 
 ```
 git clone https://github.com/izzetbiophysicist/prot_eng_GA.git
 ```
+## Downloading pyRosetta
 First of all, you must download PyRosetta. To download , you need to get a license.
 <br />
 License and Downloads links:
