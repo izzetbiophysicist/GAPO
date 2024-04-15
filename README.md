@@ -63,3 +63,7 @@ tar -xvf PyRosetta[release].tar.bz2
 cd PyRosetta*/setup
 python3 setup.py install
 ```
+Additional help for downloading and installing and PyRosetta (source:Sari Sabban youtube channel )
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/UEaFmUMEL9c/0.jpg)](https://www.youtube.com/watch?v=UEaFmUMEL9c)
+
