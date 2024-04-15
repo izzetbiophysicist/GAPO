@@ -46,6 +46,10 @@ genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, 
 
 ## Getting started
 
+## Clone the reposity
+```
+git clone https://github.com/izzetbiophysicist/prot_eng_GA.git
+```
 First of all, you must download PyRosetta. To download , you need to get a license.
 <br />
 License and Downloads links:
@@ -56,8 +60,9 @@ License and Downloads links:
 
 
 ## Creating a conda env to run GA
+```
 conda create --name GA_env --file requirements.txt
-
+```
 ## Installing PyRosetta in Conda ENV
 ### After downloading, unzip PyRosetta's and enter the setup directory to install it
 ```
