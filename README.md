@@ -41,3 +41,25 @@ genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, 
   file_name= output log file, Sequences - dG - population
   
   dg_method = select between "fold" and "bind".
+
+# Installing dependencies
+
+## Getting started
+
+First of all, you must download PyRosetta. To download , you need to get a license.
+<br />
+License and Downloads links:
+<br />
+[License](https://www.rosettacommons.org/software/license-and-download)
+<br />
+[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/)
+
+
+
+## Installing PyRosetta
+### After downloading, unzip PyRosetta's and enter the setup directory to install it
+```
+tar -xvf PyRosetta[release].tar.bz2
+cd PyRosetta*/setup
+python3 setup.py install
+```
