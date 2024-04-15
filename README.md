@@ -14,7 +14,7 @@ genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, 
              vector_size=len(starting_pose_seq), pop_size=len(init_pop), mutation_rate=0.2, segment_fluctuation=0, 
              apt_function=apt, selection_method='tournament', threads=False,
              convergence_threshold=0, n_cycles=20, n_survivors=1, tournament_size=4,
-             initial_population=init_pop)
+             initial_population=init_pop, file_name="cond_1.txt", dg_method="fold")
              
   pose = starting PDB structure
   
@@ -37,4 +37,7 @@ genetic_algo(pose=starting_pose, opt_direction='down', gene_values=gene_values, 
   tournament_size =number of individuals selected in each tournament
   
   initial_population = An initial population can be given. Otherwise, a random population is created
+
+  file_name= output log file, Sequences - dG - population
   
+  dg_method = select between "fold" and "bind".
