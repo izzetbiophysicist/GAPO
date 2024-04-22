@@ -28,11 +28,13 @@ from pyrosetta.rosetta.protocols import *
 from rosetta.core.scoring.methods import EnergyMethodOptions
 import pandas as pd
 
-
+import time
+import os
 from numpy.random import uniform
 from random import sample
 import numpy as np
-
+import multiprocessing
+from tqdm import tqdm
 
 pyrosetta.init()
 
@@ -54,34 +56,32 @@ def pack_relax(starting_pose, scorefxn, times_to_relax):
     Returns:
     A PyRosetta Pose object representing the relaxed structure.
     """
-    pose = starting_pose.clone()
     
-    for i in range(1, times_to_relax + 1):
-        tf = TaskFactory()
-        tf.push_back(operation.InitializeFromCommandline())
-        tf.push_back(operation.RestrictToRepacking())
-        # Set up a MoveMapFactory
-        mmf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()
-        mmf.all_bb(setting=True)
-        mmf.all_bondangles(setting=True)
-        mmf.all_bondlengths(setting=True)
-        mmf.all_chi(setting=True)
-        mmf.all_jumps(setting=True)
-        mmf.set_cartesian(setting=True)
-    
-        ## Print informations about structure before apply fast relax
-        # display_pose = pyrosetta.rosetta.protocols.fold_from_loops.movers.DisplayPoseLabelsMover()
-        # display_pose.tasks(tf)
-        # display_pose.movemap_factory(mmf)
-        # display_pose.apply(pose)
-    
-        fr = pyrosetta.rosetta.protocols.relax.FastRelax(scorefxn_in=scorefxn, standard_repeats=1)
-        fr.cartesian(True)
-        fr.set_task_factory(tf)
-        fr.set_movemap_factory(mmf)
-        fr.min_type("lbfgs_armijo_nonmonotone")
-        fr.apply(pose)
-    return pose
+    tf = TaskFactory()
+    tf.push_back(operation.InitializeFromCommandline())
+    tf.push_back(operation.RestrictToRepacking())
+    # Set up a MoveMapFactory
+    mmf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()
+    mmf.all_bb(setting=True)
+    mmf.all_bondangles(setting=True)
+    mmf.all_bondlengths(setting=True)
+    mmf.all_chi(setting=True)
+    mmf.all_jumps(setting=True)
+    mmf.set_cartesian(setting=True)
+
+    ## Print informations about structure before apply fast relax
+    # display_pose = pyrosetta.rosetta.protocols.fold_from_loops.movers.DisplayPoseLabelsMover()
+    # display_pose.tasks(tf)
+    # display_pose.movemap_factory(mmf)
+    # display_pose.apply(pose)
+
+    fr = pyrosetta.rosetta.protocols.relax.FastRelax(scorefxn_in=scorefxn, standard_repeats=times_to_relax)
+    fr.cartesian(True)
+    fr.set_task_factory(tf)
+    fr.set_movemap_factory(mmf)
+    fr.min_type("lbfgs_armijo_nonmonotone")
+    fr.apply(starting_pose)
+    return starting_pose
 
 def mutate_repack(starting_pose, posi, amino, scorefxn):
     """
@@ -179,24 +179,18 @@ def PDB_pose_dictionairy(pose_to):
     return df_dictionary
 
 
-def PDB_to_Pose(pose, index_list, chain):
-    """
-    Map PDB residue indices to Pose residue indices for a specific chain.
-
-    Parameters:
-    - pose: PyRosetta Pose object representing the protein structure
-    - index_list: List of PDB residue indices to map
-    - chain: Chain identifier (e.g., 'A')
-
-    Returns:
-    A list of Pose residue indices corresponding to the given PDB residue indices for the specified chain.
-    """
+def PDB_to_Pose(pose, index_list, chains):
+    list_temp = []
     df_indexes = PDB_pose_dictionairy(pose)
-    lists = list(df_indexes[(df_indexes["IndexPDB"].isin(index_list)) & (df_indexes["Chain"] == chain)]["IndexPose"])
-    return lists
+    for chain in chains:
+        lists = list(df_indexes[(df_indexes["IndexPDB"].isin(index_list)) & (df_indexes["Chain"] == chain)]["IndexPose"])
+        list_temp += lists
+    #lists = list(df_indexes[(df_indexes["IndexPDB"].isin(index_list)) & (df_indexes["Chain"] == chain)]["IndexPose"])
+    return list_temp
 
 
-def Generate_random_population(starting_pose, pop_size, fixed_residues_list, chain):
+
+def Generate_random_population(starting_pose, pop_size, fixed_residues_list, chains):
     """
     Generate a random population of protein structures for optimization.
 
@@ -214,20 +208,22 @@ def Generate_random_population(starting_pose, pop_size, fixed_residues_list, cha
     scorefxn(starting_pose)
     vector_size = len(starting_pose_seq)
 
-    
-    lista_fixed_rosetta = PDB_to_Pose(starting_pose, fixed_residues_list, chain)
+    positions_starting_pose = list(range(0,vector_size))
+    lista_fixed_rosetta = PDB_to_Pose(starting_pose, fixed_residues_list, chains)
+    #### Residues to be fixed during optimization and new population generation
+    result_list = [position for position in positions_starting_pose if position not in lista_fixed_rosetta]
 
     #### Residues to be fixed during optimization and new population generation
     new_indiv = [[gene_values[int(np.round(uniform(low=0, high=len(gene_values)-1)))] for i in range(vector_size)] for indiv in range(pop_size)]
 
     #### Fixing the fixed positions to the new inds
     for individual in new_indiv:
-        for i in lista_fixed_rosetta:
+        for i in result_list:
             individual[i-1] = starting_pose_seq[i-1]
 
     init_popu = list(new_indiv)
     
-    return init_popu, lista_fixed_rosetta
+    return init_popu, result_list
     
     
 def apt_benchmark(seq):
@@ -289,7 +285,7 @@ def apt(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
     ## add pack_relax?
     #return score
 
-def apt_thread(seq, starting_pose, scorefxn, returning_val):
+def apt_thread(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
     """
     Perform threading optimization for a sequence.
 
@@ -303,13 +299,30 @@ def apt_thread(seq, starting_pose, scorefxn, returning_val):
     None (Result is stored in the returning_val list).
     """ 
     ###define starting pose outside of the function
+    print("APT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/n")
+    scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
     
-    for i in range(len(seq)):
-        starting_pose = mutate_repack(starting_pose, posi=i+1, amino=seq[i])
-        starting_pose = pack_relax(starting_pose, scorefxn, times_to_relax = 1)
-        returning_val [0] = scorefxn(starting_pose)
-    ## add pack_relax?
-    #return score
+    resids, index = Get_residues_from_pose(pose = starting_pose)
+
+    indexes = index
+    resids_from_seq = resids
+    
+    to_mutate = Compare_sequences(resids_from_seq, seq, indexes)
+    
+    new_pose = starting_pose.clone()  
+    for index in to_mutate:
+        new_pose = mutate_repack(starting_pose = new_pose, posi = index, amino = to_mutate[index], scorefxn = scorefxn)
+    #new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
+    new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
+    if dg_method == "bind":
+        score = Dg_bind(new_pose, "A_D", scorefxn)
+        data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [score]})
+        data.to_csv(f'temp_{index_ind}.csv')
+        return score
+    if dg_method == "fold":
+        data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [scorefxn(new_pose)]})
+        data.to_csv(f'temp_{index_ind}.csv')
+        return scorefxn(new_pose)
 
 def unbind(pose, partners, scorefxn):
     """
@@ -337,7 +350,6 @@ def unbind(pose, partners, scorefxn):
     #### Pose binded = [0] | Pose separated = [1]
     return pose_binded , pose_dummy
 
-
 def dG_v2_0(pose_Sep, pose_bind, scorefxn):
     """
     Calculate the binding energy difference between the unbound and bound states.
@@ -350,8 +362,8 @@ def dG_v2_0(pose_Sep, pose_bind, scorefxn):
     Returns:
     The binding energy difference (dG).
     """
-    bound_score = scorefxn(pose_bind)
-    unbound_score = scorefxn(pose_Sep)
+    bound_score = mc(pose_bind, scorefxn, 1000, 30)
+    unbound_score = mc(pose_Sep, scorefxn, 1000, 30)
     dG = bound_score - unbound_score
     return dG
 
@@ -412,3 +424,234 @@ def Get_residues_from_pose(pose):
     # chain_sequence = ''.join([pose.residue(residue).name1() for residue in residue_numbers])
     
     return sequence, residue_numbers
+
+def correct_multi_input(population):
+    correct = []
+    for inds in population:
+        correct.append(''.join(inds))
+        
+    return correct
+        
+def Run_all_batches(pose, list_seq,dg_method, batch_indexes, index_cycle):
+    pose_init = pose.clone()
+    scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+    
+    processes = []
+
+    for x in tqdm(range(len(batch_indexes)), desc="Processing list of sequences"):
+        p = multiprocessing.Process(target=apt_thread,args=[list_seq[x], pose_init, scorefxn, dg_method, batch_indexes[x], index_cycle])
+
+        p.start()
+        processes.append(p)
+        
+    for p in processes:
+        p.join()
+        
+def remove_files(file_list):
+    for file_name in file_list:
+        try:
+            os.remove(file_name)
+            print(f"File '{file_name}' removed successfully.")
+        except OSError as e:
+            print(f"Error removing file '{file_name}': {e}")
+
+
+def check_files_in_directory(directory, file_list):
+    """
+    Check if all files in the given list exist in the specified directory.
+
+    Args:
+    directory (str): The directory to check for the files.
+    file_list (list): A list of filenames to check for.
+
+    Returns:
+    bool: True if all files exist in the directory, False otherwise.
+    """
+    while True:
+        # Check if the directory exists
+        if not os.path.isdir(directory):
+            print(f"Error: Directory '{directory}' does not exist.")
+            time.sleep(10)  # Wait for 10 seconds before retrying
+            continue
+
+        # Check if all files exist in the directory
+        missing_files = []
+        for filename in file_list:
+            file_path = os.path.join(directory, filename)
+            if not os.path.isfile(file_path):
+                missing_files.append(filename)
+        
+        if not missing_files:
+            # All files exist in the directory
+            to_save = retrieve_data(directory, file_list)
+            remove_files(file_list)
+            return to_save
+
+        else:
+            print(f"Not all files exist in directory '{directory}'. Missing files: {missing_files}")
+            time.sleep(10)  # Wait for 10 seconds before retrying
+
+def retrieve_data(directory, file_list):
+    sequence = []
+    dG = []
+    for file in file_list:
+        print(f"{file}")
+        df_temp = pd.read_csv(f"{file}")
+        sequence.append(df_temp.iloc[0,1])
+        dG.append(df_temp.iloc[0,2])
+    return sequence, dG
+
+
+
+def batchs_to_run(pose, sequences, dg_method, batch_size, index_cycle):
+    list_seq_final = []
+    list_dg_final = []
+
+    remaining_sequences = sequences[:]# Make a copy of the sequences
+    batch_index = 0  # Initialize batch index
+    while remaining_sequences:
+        lista_seq = []
+        lista_dg = []
+        # Take a batch of sequences from the remaining ones
+        batch = remaining_sequences[:batch_size]
+        #list_files_temp = [f"temp_{i}.csv" for i in batch]
+        list_files_temp = [f"temp_{batch_index * batch_size + i}.csv" for i in range(len(batch))]  # Adjusted line
+        batch_indexes = [batch_index * batch_size + i for i in range(len(batch))] 
+        remaining_sequences = remaining_sequences[batch_size:]  # Update remaining sequences
+        # Process the current batch (here, just print the sequences)
+        print("Processing batch:")
+        Run_all_batches(pose, batch,dg_method, batch_indexes, index_cycle)
+        ### Check it all files in list temp are in dir, if true, get sequences and dG from all 
+        seqs, dgs = check_files_in_directory(".", list_files_temp)
+        lista_seq.append(seqs)
+        lista_dg.append(dgs)
+        
+
+        # Append the current batch size to the list
+        list_seq_final += lista_seq
+        list_dg_final += lista_dg
+        time.sleep(5)
+        batch_index += 1  # Increment batch index
+    seqs_finais_ficou_de_verdade = [i for lista in list_seq_final for i in lista]
+    dgs_finais_ficou_de_verdade = [i for lista in list_dg_final for i in lista]
+    return dgs_finais_ficou_de_verdade
+
+def mc(pose_ref, scorefxn, en_size, en_runs):
+    
+    
+    logging.basicConfig(filename='mc.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    logging.info("Starting Monte Carlo simulation")
+    en_size=en_size ## ensemble_size
+    kT=1.0
+    n_moves=2 ### number of shear mover movements
+    anglemax_ss=1 ### anglemax of shearmove in Alpha helix and beta-sheets
+    anglemax=1 ### anglemax of shearmove in coil regions
+
+    structure = pose_ref.clone()
+    score = []
+    score_final = []
+    movemap = MoveMap()
+    
+    to_move = list(range(1, len(pose_ref.sequence())))
+    
+    move_map_list=[]
+    for posi in to_move:
+        mut_posi = pyrosetta.rosetta.core.select.residue_selector.ResidueIndexSelector()
+        mut_posi.set_index(posi)
+        
+        # Select Neighbor Position
+        nbr_selector = pyrosetta.rosetta.core.select.residue_selector.NeighborhoodResidueSelector()
+        nbr_selector.set_focus_selector(mut_posi)
+        nbr_selector.set_include_focus_in_subset(True)
+        bla=pyrosetta.rosetta.core.select.get_residues_from_subset(nbr_selector.apply(pose_ref))
+        for xres in bla:
+            move_map_list.append(xres)
+
+    
+    movemap = MoveMap()
+    for x in move_map_list:    
+        movemap.set_bb(x,True)
+        
+    
+    minmover = MinMover()
+    minmover.movemap(movemap)
+    minmover.score_function(scorefxn)
+    
+    
+    ###################
+    ## Version 4 changes
+    ##################
+    to_pack = standard_packer_task(structure)
+    to_pack.restrict_to_repacking()    # prevents design, packing only
+    to_pack.or_include_current(True)    # considers the original sidechains
+
+    
+    to_pack.temporarily_fix_everything()
+    
+    for xres in bla: 
+        to_pack.temporarily_set_pack_residue(xres, True)
+    
+    packmover = PackRotamersMover(scorefxn, to_pack)
+    
+    
+    shearmover = ShearMover(movemap, kT, n_moves) ## move phi e psi do mesmo residuo
+    
+    
+    shearmover.angle_max('H', anglemax_ss) ##helices
+    shearmover.angle_max('E', anglemax_ss) ## strands
+    shearmover.angle_max('L', anglemax) ## loops
+    
+    
+    
+    combined_mover = SequenceMover()
+    combined_mover.add_mover(shearmover)
+    combined_mover.add_mover(packmover)
+
+
+
+    before_pose = pose_ref.clone()
+    for ensembles in range(en_runs):
+        logging.info(f"Starting Monte Carlo simulation: run {ensembles}")
+        for en in range(en_size):
+            
+            after_pose = before_pose.clone()
+            
+            #### APPLY
+            combined_mover.apply(after_pose)
+            #structure.dump_pdb("./ensembles/rbd_shear_"+str(en)+"_"+name_debug+".pdb")
+    
+           
+            # The task factory accepts all the task operations
+            
+            #after_pose.dump_pdb("Dumps_ensemble/controle_mc_"+str(en)+".pdb")
+            score.append(scorefxn(after_pose))
+                
+            before_pose = decision(before_pose, after_pose, scorefxn)
+            
+            
+            #structure.dump_pdb("./ensembles/rbd_decision_"+str(en)+"_"+name_debug+".pdb")
+    
+            
+            ###dump for debug    
+           #before_pose.dump_pdb("Dumps_ensemble/teste_"+str(en)+".pdb")
+        
+        
+    
+            score_final.append(scorefxn(before_pose))
+        
+                
+    
+        
+    return np.mean(score_final)
+
+def decision(before_pose, after_pose, scorefxn):
+    ### BEGIN SOLUTION
+    E = scorefxn(after_pose) - scorefxn(before_pose)
+    if E < 0:
+        return after_pose
+    elif random.uniform(0, 1) >= math.exp(-E/1):
+        return before_pose
+    else:
+        return after_pose
+    ### END SOLUTION

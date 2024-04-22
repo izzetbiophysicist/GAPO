@@ -17,6 +17,7 @@ from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
 from datetime import datetime
 import pandas as pd
+from apt_function import correct_multi_input, batchs_to_run
 
 pyrosetta.init()
 
@@ -39,7 +40,7 @@ class thread_rosetta:
 
 
 class genetic_algo:
-    def __init__(self, pose, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, dg_method, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, lista_fixed, tournament_size=2, initial_population=[]):
+    def __init__(self, pose, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, dg_method, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, lista_fixed, cpus,tournament_size=2, initial_population=[]):
         self.initial_population=initial_population
         self.population = initial_population
         self.gene_values = gene_values  ### if gene_type = 'continuous' then gene_values should contain the upper and lower bounds
@@ -64,7 +65,7 @@ class genetic_algo:
         self.lista_fixed = lista_fixed
         self.dg_method = dg_method
         self.t = "init"
-
+        self.cpus = cpus
 
 
         ### recalculate pop_size if the initial population is not randomly generated
@@ -102,8 +103,10 @@ class genetic_algo:
                     print('CALCULATING SCORES!')
 
                 #### Iterate over population and fill self.scores
-                    scores = [self.apt_function(population[x], self.pose, self.scorefxn, self.dg_method, x, self.t) for x in range(len(population))]
-
+                    #scores = [self.apt_function(population[x], self.pose, self.scorefxn, self.dg_method, x, self.t) for x in range(len(population))]
+                    population = correct_multi_input(population)
+                    scores = batchs_to_run(self.pose, population, self.dg_method, self.cpus, self.t)
+                    #scores = self.apt_function(self.pose, population, self.dg_method, self.cpus, self.t)
                 ## TEST APT-FUNCTION WHEN NOT USING THREADS
 
                 if self.threads==True:
