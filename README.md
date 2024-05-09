@@ -1,4 +1,4 @@
-# GAPENG - Genetic algorithm for protein engineering
+# GAPEng - Genetic algorithm for protein engineering
 In silico protein engineering using Genetic Algorithms and rosetta energy calculations
 
 genetic_algorithm.py = contains main function
