@@ -56,10 +56,10 @@ GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = 
 ```
 
   
-  | Attempt | #1    | #2    |
-  | :---:   | :---: | :---: |
-  | Seconds | 301   | 283   |
-  pose = starting PDB structure
+  | Parameter | Description  | 
+  | :---:   | :---: |
+  | Seconds | 301  |
+  opt_direction | selects if the objective function goes up or down
   
   opt_direction = selects if the objective function goes up or down
   
