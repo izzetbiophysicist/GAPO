@@ -44,12 +44,13 @@ GAprot.py imports genetic_algorithmpy and apt_functions.py, configures initial p
 
 ### GA function
 
+```python
 GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = init_population, gene_values=gene_values, gene_type='discrete',
              vector_size=len(starting_pose_seq), pop_size=len(init_population), mutation_rate=0.025, segment_fluctuation=0,
              apt_function=apt, selection_method='tournament', threads=False,
-             convergence_threshold=0, n_cycles=4, tournament_cycles=int(np.round(len(init_population)/4)), tournament_size=2, benchmark=False, 
-             lista_fixed=list_fixed_index, crossing_over_type='mask', file_name="teste_1.txt", dg_method="fold")
-             
+             convergence_threshold=0, n_cycles=4, tournament_cycles=int(np.round(len(init_population)/4)), tournament_size=4, benchmark=False, 
+             lista_fixed=list_fixed_index, crossing_over_type='mask', file_name="teste_1.txt", dg_method="fold",  cpus  = 5)
+```   
   pose = starting PDB structure
   
   opt_direction = selects if the objective function goes up or down
@@ -76,6 +77,7 @@ GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = 
   
   dg_method = select between "fold" and "bind".
 
+  cpus = numbers of CPU usage to paralelize
 
 
 Additional help for downloading and installing and PyRosetta (source:Sari Sabban youtube channel )
