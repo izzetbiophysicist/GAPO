@@ -1,5 +1,39 @@
 # GAPO - Genetic algorithm for Protein Optimization
 In silico protein engineering using Genetic Algorithms and rosetta energy calculations
+<br/>
+# Installing dependencies
+
+## Getting started
+
+## Clone the reposity
+```
+git clone https://github.com/izzetbiophysicist/prot_eng_GA.git
+```
+## Downloading pyRosetta
+First of all, you must download PyRosetta. To download , you need to get a license.
+<br />
+License and Downloads links:
+<br />
+[License](https://www.rosettacommons.org/software/license-and-download)
+<br />
+[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.linux/PyRosetta4.Release.python310.linux.release-370.tar.bz2)
+
+
+## Creating a conda env to run GA
+```
+conda create --name GA_env --file requirements.txt
+```
+## Installing PyRosetta in Conda ENV
+### After downloading, unzip PyRosetta's and enter the setup directory to install it
+```
+tar -xvf PyRosetta4.Release.python310.linux.release-370.tar.bz2
+cd PyRosetta4.Release.python310.linux.release-370/setup
+conda activate GA_env
+python setup.py install
+```
+<br/>
+
+## Running the code
 
 genetic_algorithm.py = contains main function
 apt_functions.py = contains a collection of objective functions for the genetic algorithm
@@ -42,36 +76,7 @@ GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = 
   
   dg_method = select between "fold" and "bind".
 
-# Installing dependencies
 
-## Getting started
-
-## Clone the reposity
-```
-git clone https://github.com/izzetbiophysicist/prot_eng_GA.git
-```
-## Downloading pyRosetta
-First of all, you must download PyRosetta. To download , you need to get a license.
-<br />
-License and Downloads links:
-<br />
-[License](https://www.rosettacommons.org/software/license-and-download)
-<br />
-[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.linux/PyRosetta4.Release.python310.linux.release-370.tar.bz2)
-
-
-## Creating a conda env to run GA
-```
-conda create --name GA_env --file requirements.txt
-```
-## Installing PyRosetta in Conda ENV
-### After downloading, unzip PyRosetta's and enter the setup directory to install it
-```
-tar -xvf PyRosetta4.Release.python310.linux.release-370.tar.bz2
-cd PyRosetta4.Release.python310.linux.release-370/setup
-conda activate GA_env
-python setup.py install
-```
 
 Additional help for downloading and installing and PyRosetta (source:Sari Sabban youtube channel )
 
