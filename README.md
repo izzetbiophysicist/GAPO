@@ -53,7 +53,12 @@ GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = 
              apt_function=apt, selection_method='tournament', threads=False,
              convergence_threshold=0, n_cycles=4, tournament_cycles=int(np.round(len(init_population)/4)), tournament_size=4, benchmark=False, 
              lista_fixed=list_fixed_index, crossing_over_type='mask', file_name="teste_1.txt", dg_method="fold",  cpus  = 5)
-```   
+```
+
+  
+  | Attempt | #1    | #2    |
+  | :---:   | :---: | :---: |
+  | Seconds | 301   | 283   |
   pose = starting PDB structure
   
   opt_direction = selects if the objective function goes up or down
