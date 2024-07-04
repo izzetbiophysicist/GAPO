@@ -68,6 +68,7 @@ GA.execute()
   |threahds | Parallel processing (not supported)
   |n_survivor | Number of survivors in each selection
   |tournament_size | Number of individuals selected in each tournament
+  |lista_fixed | List of residues to maintain during evolution
   |initial_population | An initial population can be given. Otherwise, a random population is created
   |file_name | Output log file, Sequences - dG - population
   |dg_method | Select between "fold" and "bind".
