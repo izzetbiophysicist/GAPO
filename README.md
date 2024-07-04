@@ -55,6 +55,7 @@ GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = 
              lista_fixed=list_fixed_index, crossing_over_type='mask', file_name="teste_1.txt", dg_method="fold",  cpus  = 5)
 ```
 
+### GA parameters and descriptions
   
   | Parameter | Description  | 
   | :---:   | :---: |
