@@ -44,7 +44,7 @@ starting_pose_seq = [x for x in starting_pose.sequence()]
 CDRs = [62,63,64,65,66,67,68,69,70,71,72,88,89,90,91,92,93,94,127,128,129,130,131,132,133,134,135,186,187,188,189,190,191,192,212,213,214,215,216,257,258,259,260,261,262,263,264,265,266,267,268,269]# Chain identifier for the fixed residues
 
 
-# Generate an initial population of protein structures for optimization
+# Generate an initial population of protein structures for optimization 
 init_population, list_fixed_index = apt_function.Generate_random_population(starting_pose = starting_pose, 
                                                              pop_size = 50,
                                                              fixed_residues_list = CDRs,
