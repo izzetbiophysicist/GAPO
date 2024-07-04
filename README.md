@@ -58,35 +58,18 @@ GA = genetic_algo(pose=starting_pose, opt_direction='down',initial_population = 
   
   | Parameter | Description  | 
   | :---:   | :---: |
-  | Seconds | 301  |
-  opt_direction | selects if the objective function goes up or down
-  
-  opt_direction = selects if the objective function goes up or down
-  
-  gene_values = Values that vectors can assume
-  
-  gene_type = Selects between discrete or continuous genes
-  
-  vector_size = size of the vectors
-  
-  selection methods = elitist or tournament selection
-  
-  threahds = parallel processing (not supported)
-  
-  n_cycles = number of optimization cycles
-  
-  n_survivor = number of survivors in each selection
-  
-  tournament_size =number of individuals selected in each tournament
-  
-  initial_population = An initial population can be given. Otherwise, a random population is created
-
-  file_name= output log file, Sequences - dG - population
-  
-  dg_method = select between "fold" and "bind".
-
-  cpus = numbers of CPU usage to paralelize
-
+  |opt_direction | Selects if the objective function goes up or down
+  |gene_values | Values that vectors can assume
+  |gene_type | Selects between discrete or continuous genes
+  |vector_size | Size of the vectors
+  |selection_methods | Elitist or tournament selection
+  |threahds | Parallel processing (not supported)
+  |n_survivor | Number of survivors in each selection
+  |tournament_size | Number of individuals selected in each tournament
+  |initial_population | An initial population can be given. Otherwise, a random population is created
+  |file_name | Output log file, Sequences - dG - population
+  |dg_method | Select between "fold" and "bind".
+  |cpus | Numbers of CPU usage to paralelize
 
 
 
