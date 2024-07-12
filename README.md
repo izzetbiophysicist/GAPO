@@ -38,7 +38,9 @@ python setup.py install
 
 ### After install GA env, install PBEE and it dependencies
 
-https://github.com/chavesejf/pbee
+https://github.com/chavesejf/pbee.
+
+After install pbee and all dependencies, remember to put in the same directory both pbee and GA folders and files on the same directory.
 <br/>
 
 
