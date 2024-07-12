@@ -35,7 +35,8 @@ conda activate GA_env
 python setup.py install
 ```
 <br/>
-
+### After install GA env, install PBEE and it dependencies
+https://github.com/chavesejf/pbee
 ## Running the code
 
 genetic_algorithm.py = contains main function
