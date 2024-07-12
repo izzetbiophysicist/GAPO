@@ -40,7 +40,7 @@ python setup.py install
 
 https://github.com/chavesejf/pbee.
 
-After install pbee and all dependencies, remember to put in the same directory both pbee and GA folders and files on the same directory.
+After install pbee and all dependencies, remember to put in  both pbee and GA folders and files on the same directory.
 <br/>
 
 
