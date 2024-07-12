@@ -36,6 +36,12 @@ python setup.py install
 ```
 <br/>
 
+### After install GA env, install PBEE and it dependencies
+<br/>
+https://github.com/chavesejf/pbee
+<br/>
+
+
 ## Running the code
 
 genetic_algorithm.py = contains main function
