@@ -27,6 +27,7 @@ from pyrosetta.rosetta.protocols.docking import setup_foldtree
 from pyrosetta.rosetta.protocols import *
 from rosetta.core.scoring.methods import EnergyMethodOptions
 import pandas as pd
+import subprocess
 #Core Includes
 from rosetta.core.kinematics import MoveMap
 from rosetta.core.kinematics import FoldTree
@@ -259,7 +260,8 @@ def Generate_random_population(starting_pose, pop_size, fixed_residues_list, cha
     vector_size = len(starting_pose_seq)
 
     positions_starting_pose = list(range(0,vector_size))
-    lista_fixed_rosetta = PDB_to_Pose(starting_pose, fixed_residues_list, chains)
+    #lista_fixed_rosetta = PDB_to_Pose(starting_pose, fixed_residues_list, chains)
+    lista_fixed_rosetta = fixed_residues_list
     #### Residues to be fixed during optimization and new population generation
     result_list = [position for position in positions_starting_pose if position not in lista_fixed_rosetta]
 
@@ -273,7 +275,7 @@ def Generate_random_population(starting_pose, pop_size, fixed_residues_list, cha
 
     init_popu = list(new_indiv)
     
-    return init_popu, result_list
+    return init_popu, result_list, lista_fixed_rosetta
     
     
 def apt_benchmark(seq):
@@ -294,6 +296,44 @@ def apt_benchmark(seq):
     ## add pack_relax?
     return score
 
+def apt_rosetta(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
+    """
+    Perform threading optimization for a sequence.
+
+    Parameters:
+    - seq: Target sequence for threading
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - scorefxn: Score function to evaluate the energy of the structure
+    - returning_val: List to store the result
+
+    Returns:
+    None (Result is stored in the returning_val list).
+    """ 
+    ###define starting pose outside of the function
+    print("APT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/n")
+    scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+    
+    resids, index = Get_residues_from_pose(pose = starting_pose)
+
+    indexes = index
+    resids_from_seq = resids
+    
+    to_mutate = Compare_sequences(resids_from_seq, seq, indexes)
+    
+    new_pose = starting_pose.clone()  
+    for index in to_mutate:
+        new_pose = mutate_repack(starting_pose = new_pose, posi = index, amino = to_mutate[index], scorefxn = scorefxn)
+    #new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
+    new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
+    if dg_method == "bind":
+        score = Dg_bind(new_pose, "A_D", scorefxn)
+        data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [score]})
+        data.to_csv(f'temp_{index_ind}.csv')
+        return score
+    if dg_method == "fold":
+        data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [scorefxn(new_pose)]})
+        data.to_csv(f'temp_{index_ind}.csv')
+        return scorefxn(new_pose)
 
 def apt(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
     """
@@ -349,7 +389,6 @@ def apt_thread(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
     None (Result is stored in the returning_val list).
     """ 
     ###define starting pose outside of the function
-    print("APT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/nAPT THREAD CHAMADA COM SUCESSO/n")
     scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
     
     resids, index = Get_residues_from_pose(pose = starting_pose)
@@ -365,7 +404,12 @@ def apt_thread(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
     #new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
     new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
     if dg_method == "bind":
-        score = Dg_bind(new_pose, "A_D", scorefxn)
+        #### Trocar apenas essa linha pelo calculo de dG usando o pbee
+        command = f"python3 pbee.py --ipdb PDBs/{index_ind}_{index_cycle}.pdb --partner1 CD --partner2 A --odir . --force_mode"
+        print(command)
+        subprocess.run(command, stdout=subprocess.PIPE, shell=True)
+        temp_df = pd.read_csv(f"outputs_pbee/{index_ind}_{index_cycle}/dG_pred.csv")
+        score = temp_df["dG_pred"][0]
         data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [score]})
         data.to_csv(f'temp_{index_ind}.csv')
         return score
