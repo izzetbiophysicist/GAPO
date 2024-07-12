@@ -49,6 +49,7 @@ GAprot.py imports genetic_algorithmpy and apt_functions.py, configures initial p
   | Parameter | Description  | 
   | :---:   | :---: |
   |opt_direction | Selects if the objective function goes up or down
+  |apt_function | Select between "apt_thread" for pbee and "apt_rosetta" for rosetta.
   |gene_values | Values that vectors can assume
   |gene_type | Selects between discrete or continuous genes
   |vector_size | Size of the vectors
