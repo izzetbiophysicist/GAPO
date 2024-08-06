@@ -401,7 +401,7 @@ def apt_thread(seq, starting_pose, scorefxn, dg_method, index_ind, index_cycle):
     new_pose = starting_pose.clone()  
     for index in to_mutate:
         new_pose = mutate_repack(starting_pose = new_pose, posi = index, amino = to_mutate[index], scorefxn = scorefxn)
-    #new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
+    new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
     new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
     if dg_method == "bind":
         #### Trocar apenas essa linha pelo calculo de dG usando o pbee
