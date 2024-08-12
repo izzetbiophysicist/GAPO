@@ -44,7 +44,13 @@ def insert_mask(sequence, position, mask="<mask>"):
     else:
         raise TypeError("Sequence must be a string or list.")
 
+
 def complete_mask(input_sequence, posi, temperature=1.0):
+    
+    
+    exclude = [alphabet.get_idx('X'), alphabet.get_idx('B'),
+               alphabet.get_idx('U'), alphabet.get_idx('Z'),
+               alphabet.get_idx('O')]
     
     data = [
         ("protein1", insert_mask(input_sequence, posi, mask="<mask>"))
@@ -65,10 +71,11 @@ def complete_mask(input_sequence, posi, temperature=1.0):
 
     # Get the index of the <mask> token
     mask_idx = (batch_tokens == alphabet.mask_idx).nonzero(as_tuple=True)
-
-    # Extract the predicted tokens for the masked positions
-    predicted_tokens = torch.argmax(probabilities, dim=-1)
     
+    # Zero out probabilities for excluded tokens
+    for token in exclude:
+        probabilities[:, :, token] = 0.0
+
     # Sample from the probability distribution
     predicted_tokens = torch.multinomial(probabilities[mask_idx], num_samples=1).squeeze(-1)
 
@@ -80,10 +87,9 @@ def complete_mask(input_sequence, posi, temperature=1.0):
     
     seq_predicted = ''.join(predicted_residues[1:-1])
     
-    
     if input_sequence != seq_predicted:
         print("Mutation added!! 😉")
-   
+    
     return seq_predicted
 class GeneticAlgoBase:
     def __init__(self, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, mutation_type, esm_tmp=1.0, initial_population=[], lista_fixed=[], tournament_size=2):
