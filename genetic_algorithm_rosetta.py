@@ -46,15 +46,14 @@ def insert_mask(sequence, position, mask="<mask>"):
 
 
 def complete_mask(input_sequence, posi, temperature=1.0):
-    
-    
-    exclude = [alphabet.get_idx('X'), alphabet.get_idx('B'),
-               alphabet.get_idx('U'), alphabet.get_idx('Z'),
-               alphabet.get_idx('O')]
-    
+
+    standard_aa = [alphabet.get_idx(aa) for aa in ['A', 'R', 'N', 'D', 'C', 'Q', 
+                                                   'E', 'G', 'H', 'I', 'L', 'K', 
+                                                   'M', 'F', 'P', 'S', 'T', 'W', 
+                                                   'Y', 'V']]
+
     data = [
-        ("protein1", insert_mask(input_sequence, posi, mask="<mask>"))
-    ]
+        ("protein1", insert_mask(input_sequence, posi, mask="<mask>"))]
 
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
     batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
@@ -65,16 +64,18 @@ def complete_mask(input_sequence, posi, temperature=1.0):
 
     # Apply temperature
     token_probs /= temperature
-    
+
     softmax = torch.nn.Softmax(dim=-1)
     probabilities = softmax(token_probs)
 
     # Get the index of the <mask> token
     mask_idx = (batch_tokens == alphabet.mask_idx).nonzero(as_tuple=True)
-    
-    # Zero out probabilities for excluded tokens
-    for token in exclude:
-        probabilities[:, :, token] = 0.0
+
+        # Zero out probabilities for excluded tokens
+        
+    for token_idx in range(probabilities.size(-1)):
+        if token_idx not in standard_aa:
+            probabilities[:, :, token_idx] = 0.0
 
     # Sample from the probability distribution
     predicted_tokens = torch.multinomial(probabilities[mask_idx], num_samples=1).squeeze(-1)
@@ -82,14 +83,13 @@ def complete_mask(input_sequence, posi, temperature=1.0):
     # Replace the <mask> token with the predicted token
     batch_tokens[mask_idx] = predicted_tokens
 
-
     predicted_residues = [alphabet.get_tok(pred.item()) for pred in batch_tokens[0]]
-    
+
     seq_predicted = ''.join(predicted_residues[1:-1])
-    
+
     if input_sequence != seq_predicted:
         print("Mutation added!! 😉")
-    
+
     return seq_predicted
 class GeneticAlgoBase:
     def __init__(self, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, mutation_type, esm_tmp=1.0, initial_population=[], lista_fixed=[], tournament_size=2):
