@@ -189,7 +189,8 @@ class GeneticAlgoBase:
         return newind1, newind2
 
     def mutate(self, ind, lista_fixed, mutation_type):
-        lista_len_seq = list(range(1, len(ind)))
+        llista_len_seq = list(range(0, len(ind)))
+        lista_fixed = [x - 1 for x in lista_fixed]
         inds_to_mut = [i for i in lista_len_seq if i not in lista_fixed]
         if mutation_type == "esm":
             position = int(np.random.choice(inds_to_mut, 1))
