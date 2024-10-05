@@ -6,6 +6,27 @@ Created on Sun Feb 12 19:52:36 2023
 @author: lucas
 """
 
+from pyrosetta import *
+from rosetta.core.pack.task import TaskFactory
+from rosetta.core.pack.task import operation
+from rosetta.core.kinematics import MoveMap
+from rosetta.core.kinematics import FoldTree
+from rosetta.core.pack.task import TaskFactory
+from rosetta.core.pack.task import operation
+from rosetta.core.simple_metrics import metrics
+from rosetta.core.select import residue_selector as selections
+from rosetta.core import select
+from rosetta.core.select.movemap import *
+from rosetta.protocols import minimization_packing as pack_min
+from rosetta.protocols import relax as rel
+from rosetta.protocols.antibody.residue_selector import CDRResidueSelector
+from rosetta.protocols.antibody import *
+from rosetta.protocols.loops import *
+from rosetta.protocols.relax import FastRelax
+from pyrosetta.rosetta.protocols.docking import setup_foldtree
+from pyrosetta.rosetta.protocols import *
+from rosetta.core.scoring.methods import EnergyMethodOptions
+
 import pandas as pd
 import subprocess
 #Core Includes
@@ -71,7 +92,96 @@ def Generate_random_population(starting_pose, pop_size, fixed_residues_list, cha
     init_popu = list(new_indiv)
     
     return init_popu, result_list, lista_fixed_rosetta
+def pack_relax(starting_pose, scorefxn, times_to_relax):
+    """
+    Perform a fast relaxation protocol on the given pose using PyRosetta's FastRelax.
+
+    Parameters:
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - scorefxn: Score function to evaluate the energy of the structure
+    - times_to_relax: Number of relaxation iterations to perform
+
+    Returns:
+    A PyRosetta Pose object representing the relaxed structure.
+    """
     
+    tf = TaskFactory()
+    tf.push_back(operation.InitializeFromCommandline())
+    tf.push_back(operation.RestrictToRepacking())
+    # Set up a MoveMapFactory
+    mmf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()
+    mmf.all_bb(setting=True)
+    mmf.all_bondangles(setting=True)
+    mmf.all_bondlengths(setting=True)
+    mmf.all_chi(setting=True)
+    mmf.all_jumps(setting=True)
+    mmf.set_cartesian(setting=True)
+
+    ## Print informations about structure before apply fast relax
+    # display_pose = pyrosetta.rosetta.protocols.fold_from_loops.movers.DisplayPoseLabelsMover()
+    # display_pose.tasks(tf)
+    # display_pose.movemap_factory(mmf)
+    # display_pose.apply(pose)
+
+    fr = pyrosetta.rosetta.protocols.relax.FastRelax(scorefxn_in=scorefxn, standard_repeats=times_to_relax)
+    fr.cartesian(True)
+    fr.set_task_factory(tf)
+    fr.set_movemap_factory(mmf)
+    fr.min_type("lbfgs_armijo_nonmonotone")
+    fr.apply(starting_pose)
+    return starting_pose
+
+def mutate_repack(starting_pose, posi, amino, scorefxn):
+    """
+    Mutate a specific residue in the pose and perform repacking.
+    
+    Parameters:
+    - starting_pose: PyRosetta Pose object representing the initial protein structure
+    - posi: Position of the residue to mutate
+    - amino: Amino acid to mutate to
+    - scorefxn: Score function to evaluate the energy of the structure
+    
+    Returns:
+    A PyRosetta Pose object representing the mutated and repacked structure.
+    """
+    pose = starting_pose.clone()
+    
+     #Select position to mutate
+    mut_posi = pyrosetta.rosetta.core.select.residue_selector.ResidueIndexSelector()
+    mut_posi.set_index(posi)
+    
+    #Select neighbor positions
+    nbr_selector = pyrosetta.rosetta.core.select.residue_selector.NeighborhoodResidueSelector()
+    nbr_selector.set_focus_selector(mut_posi)
+    nbr_selector.set_include_focus_in_subset(True)
+    
+    not_design = pyrosetta.rosetta.core.select.residue_selector.NotResidueSelector(mut_posi)
+
+    tf = pyrosetta.rosetta.core.pack.task.TaskFactory()
+
+    tf.push_back(pyrosetta.rosetta.core.pack.task.operation.InitializeFromCommandline())
+    tf.push_back(pyrosetta.rosetta.core.pack.task.operation.IncludeCurrent())
+    tf.push_back(pyrosetta.rosetta.core.pack.task.operation.NoRepackDisulfides())
+
+    # Disable Packing
+    prevent_repacking_rlt = pyrosetta.rosetta.core.pack.task.operation.PreventRepackingRLT()
+    prevent_subset_repacking = pyrosetta.rosetta.core.pack.task.operation.OperateOnResidueSubset(prevent_repacking_rlt, nbr_selector, True )
+    tf.push_back(prevent_subset_repacking)
+
+    # Disable design
+    tf.push_back(pyrosetta.rosetta.core.pack.task.operation.OperateOnResidueSubset(pyrosetta.rosetta.core.pack.task.operation.RestrictToRepackingRLT(),not_design))
+
+    # Enable design
+    aa_to_design = pyrosetta.rosetta.core.pack.task.operation.RestrictAbsentCanonicalAASRLT()
+    aa_to_design.aas_to_keep(amino)
+    tf.push_back(pyrosetta.rosetta.core.pack.task.operation.OperateOnResidueSubset(aa_to_design, mut_posi))
+
+    # Create Packer
+    packer = pyrosetta.rosetta.protocols.minimization_packing.PackRotamersMover(scorefxn)
+    packer.task_factory(tf) 
+    packer.apply(pose)
+    
+    return pose  
     
 def apt_benchmark(seq):
     """
