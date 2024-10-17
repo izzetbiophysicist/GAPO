@@ -10,13 +10,9 @@ GAPO is a _in silico_ genetic algorithm used to optimize proteins for a desired 
 git clone https://github.com/izzetbiophysicist/prot_eng_GA.git
 ```
 ## Downloading pyRosetta
-First of all, you must download PyRosetta. To download , you need to get a license.
+First of all, you must download PyRosetta.
 <br />
-License and Downloads links:
-<br />
-[License](https://www.rosettacommons.org/software/license-and-download)
-<br />
-[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.linux/PyRosetta4.Release.python310.linux.release-370.tar.bz2)
+[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.ubuntu/)
 
 Additional help for downloading and installing and PyRosetta (source:Sari Sabban youtube channel )
 
