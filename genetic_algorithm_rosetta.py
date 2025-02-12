@@ -229,6 +229,8 @@ class GeneticAlgoBase:
             whole_pop = {'indv': population + offspring, 'score': scores + offspring_scores}
             whole_pop = pd.DataFrame(whole_pop)
             whole_pop = whole_pop.sort_values('score', ascending=(self.opt_direction == 'down'))
+                        
+            whole_pop = whole_pop[0:self.pop_size]
 
             return whole_pop['indv'].to_list(), whole_pop['score'].to_list()
 
