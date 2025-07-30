@@ -1,4 +1,9 @@
 # GAPO - Genetic algorithm for Protein Optimization
+
+<div align="center">
+  <img src="./GAPO_logo.png" alt="Slinky Logo" width="400">
+</div>
+
 GAPO is a _in silico_ genetic algorithm used to optimize proteins for a desired function, such as stability and affinity. The algorithm mimetizes the evolutionary process, by recombining and adding mutations to the best sequences in order to generate a new population with higher diversity and optimized for the given objetive function. 
 <br/>
 # Installing dependencies
