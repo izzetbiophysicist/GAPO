@@ -63,13 +63,12 @@ GAprot.py imports genetic_algorithmpy and apt_functions.py, configures initial p
   |gene_type | Selects between discrete or continuous genes
   |vector_size | Size of the vectors
   |selection_methods | Elitist or tournament selection
-  |threahds | Parallel processing (not supported)
   |n_survivor | Number of survivors in each selection
   |tournament_size | Number of individuals selected in each tournament
+  |crossing_over_type | Type of crossover during optimization
   |lista_fixed | List of residues to maintain during evolution
   |initial_population | An initial population can be given. Otherwise, a random population is created
   |file_name | Output log file, Sequences - dG - population
-  |dg_method | Select between "fold" and "bind".
   |cpus | Numbers of CPU usage to paralelize
 
 <br/>
