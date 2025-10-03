@@ -35,15 +35,6 @@ cd PyRosetta4.Release.python310.linux.release-370/setup
 conda activate GA_env
 python setup.py install
 ```
-<br/>
-
-### After install GA env, install PBEE and it dependencies
-
-https://github.com/chavesejf/pbee.
-
-After install pbee and all dependencies, remember to put in  both pbee and GA folders and files on the same directory.
-<br/>
-
 
 ## Running the code
 
