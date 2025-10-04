@@ -6,6 +6,33 @@
 
 GAPO is a _in silico_ genetic algorithm used to optimize proteins for a desired function, such as stability and affinity. The algorithm mimetizes the evolutionary process, by recombining and adding mutations to the best sequences in order to generate a new population with higher diversity and optimized for the given objetive function. 
 <br/>
+
+<p align="center">
+  <em>In silico protein optimization through genetic algorithms.</em>
+  <br />
+  <br />
+  <a href="#about-the-project">About The Project</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#contributing">Contributing</a>
+</p>
+
+---
+
+### Table of Contents
+
+- [About The Project](#about-the-project)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+  - [Example 1: Structure-Based Optimization](#example-1-structure-based-optimization)
+  - [Example 2: Sequence-Based Optimization](#example-2-sequence-based-optimization)
+  - [Algorithm Parameters](#algorithm-parameters)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+
 # Installing dependencies
 
 ## Getting started
