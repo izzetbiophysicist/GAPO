@@ -83,7 +83,7 @@ Before you begin, ensure you have **Conda** installed on your system.
         ```
 
 5.  **Install PyRosetta**
-    Finally, install PyRosetta using its dedicated installer. This requires a license.
+    Finally, install PyRosetta using its dedicated installer.
     ```sh
     pip install pyrosetta-installer
     python -c 'import pyrosetta_installer; pyrosetta_installer.install_pyrosetta()'
