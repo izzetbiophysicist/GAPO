@@ -27,8 +27,6 @@
   - [Example 2: Sequence-Based Optimization](#example-2-sequence-based-optimization)
   - [Algorithm Parameters](#algorithm-parameters)
 - [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ---
 
@@ -104,19 +102,18 @@ This example optimizes the CDRs of an scFv based on its PDB structure, using the
 python GAprot.py structure \
     --pdb inputs/CD19_scFv_relax.pdb \
     --fixed_residues 62 63 64 65 66 67 68 69 70 71 72 88 89 90 91 92 93 94 127 128 129 130 131 132 133 134 135 186 187 188 189 190 191 192 212 213 214 215 216 257 258 259 260 261 262 263 264 265 266 267 268 269 \
-    --chains C D \
     --apt_function rosetta \
     --pop_size 50 \
     --cycles 10 \
     --opt_direction down \
-    --output_file results/rosetta_run_01.csv
+    --output_file rosetta_run_01
 ```
 ### Algorithm Parameters ⚙️
 
 | Parameter            | Description                                                                                             |
 | :------------------- | :------------------------------------------------------------------------------------------------------ |
 | `opt_direction`      | Sets the optimization direction: `up` (maximize) or `down` (minimize) the objective function.           |
-| `apt_function`       | Selects the objective function. E.g., `rosetta`, `pbee`, `esm`, `esm_penalty`, `esm_shannon_penalty`. |
+| `apt_function`       | Selects the objective function. E.g., `rosetta`, `esm`, `esm_penalty`, `esm_shannon_penalty`.           |
 | `gene_values`        | Values that genes can assume (typically the 20 amino acids).                                            |
 | `gene_type`          | Gene type: `discrete` (e.g., amino acids) or `continuous` (e.g., numerical values).                   |
 | `vector_size`        | The size of the genetic vector (protein sequence length).                                               |
@@ -127,4 +124,15 @@ python GAprot.py structure \
 | `file_name`          | Name of the output file (`.csv`) to log the results of each generation.                                 |
 | `cpus`               | Number of CPU cores to use for parallelizing calculations.                                              |
 
+## Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
+
+---
 
