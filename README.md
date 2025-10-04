@@ -110,3 +110,21 @@ python GAprot.py structure \
     --cycles 10 \
     --opt_direction down \
     --output_file results/rosetta_run_01.csv
+```
+### Algorithm Parameters ⚙️
+
+| Parameter            | Description                                                                                             |
+| :------------------- | :------------------------------------------------------------------------------------------------------ |
+| `opt_direction`      | Sets the optimization direction: `up` (maximize) or `down` (minimize) the objective function.           |
+| `apt_function`       | Selects the objective function. E.g., `rosetta`, `pbee`, `esm`, `esm_penalty`, `esm_shannon_penalty`. |
+| `gene_values`        | Values that genes can assume (typically the 20 amino acids).                                            |
+| `gene_type`          | Gene type: `discrete` (e.g., amino acids) or `continuous` (e.g., numerical values).                   |
+| `vector_size`        | The size of the genetic vector (protein sequence length).                                               |
+| `selection_method`   | Method for selecting individuals for the next generation. E.g., `tournament`.                           |
+| `crossing_over_type` | Type of genetic recombination (crossover) to be applied. E.g., `mask`.                                  |
+| `lista_fixed`        | A list of residue positions (indices) to keep fixed during evolution.                                   |
+| `initial_population` | Allows providing an initial population. If omitted, a random population will be generated.              |
+| `file_name`          | Name of the output file (`.csv`) to log the results of each generation.                                 |
+| `cpus`               | Number of CPU cores to use for parallelizing calculations.                                              |
+
+
