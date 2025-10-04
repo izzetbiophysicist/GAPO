@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.random import uniform
 from random import sample
+from multiprocessing import Pool
 
 from threading import Thread
 from time import sleep
@@ -87,12 +88,12 @@ def complete_mask(input_sequence, posi, temperature=1.0):
 
     seq_predicted = ''.join(predicted_residues[1:-1])
 
-    if input_sequence != seq_predicted:
-        print("Mutation added!! 😉")
-
     return seq_predicted
+
 class GeneticAlgoBase:
-    def __init__(self, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, mutation_type, esm_tmp=1.0, initial_population=[], lista_fixed=[], tournament_size=2):
+    def __init__(self, opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, 
+                 apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles,
+                 file_name, mutation_type, esm_tmp=1.0, initial_population=[], lista_fixed=[], tournament_size=2):
         self.initial_population = initial_population
         self.population = initial_population
         self.gene_values = gene_values  ### if gene_type = 'continuous' then gene_values should contain the upper and lower bounds
@@ -132,27 +133,42 @@ class GeneticAlgoBase:
             self.first_population = self.population
 
     def calculate_scores(self, population, pre_calc=[]):
-        if len(pre_calc) == 0:
-            if self.benchmark:
-                print('CALCULATING SCORES!')
-                scores = [self.apt_function(population[x]) for x in range(len(population))]
-            else:
-                if not self.threads:
-                    print('CALCULATING SCORES!')
-                    population = correct_multi_input(population)
-                    scores = batchs_to_run(self.pose, self.apt_function, population, self.cpus, self.t)
-                else:
-                    print('CALCULATING SCORES!')
-                    t1 = thread_rosetta(population, self.pose, self.scorefxn, self.apt_function, self.dg_method)
-                    t1.run()
-                    scores = [t1.return_results[x][0] for x in range(len(t1.return_results))]
+    # ...
+        print('CALCULATING SCORES!')
+        population_str = correct_multi_input(population)
 
-        else:
-            scores = list(pre_calc)
-            scores_to_append = [self.apt_function(population[x]) for x in range(len(population)) if x >= len(pre_calc)]
-            scores = scores + scores_to_append
+        # Prepara os argumentos para cada processo
+        # (index_cycle agora é passado para a função)
+        args_for_pool = [(seq, self.pose, self.scorefxn, i, self.t) for i, seq in enumerate(population_str)]
+
+        with Pool(processes=self.cpus) as pool:
+            # starmap desempacota os argumentos para a função
+            scores = pool.starmap(self.apt_function, args_for_pool)
 
         return scores
+
+    # def calculate_scores(self, population, pre_calc=[]):
+    #     if len(pre_calc) == 0:
+    #         if self.benchmark:
+    #             print('CALCULATING SCORES!')
+    #             scores = [self.apt_function(population[x]) for x in range(len(population))]
+    #         else:
+    #             if not self.threads:
+    #                 print('CALCULATING SCORES!')
+    #                 population = correct_multi_input(population)
+    #                 scores = batchs_to_run(self.pose, self.apt_function, population, self.cpus, self.t)
+    #             else:
+    #                 print('CALCULATING SCORES!')
+    #                 t1 = thread_rosetta(population, self.pose, self.scorefxn, self.apt_function, self.dg_method)
+    #                 t1.run()
+    #                 scores = [t1.return_results[x][0] for x in range(len(t1.return_results))]
+
+    #     else:
+    #         scores = list(pre_calc)
+    #         scores_to_append = [self.apt_function(population[x]) for x in range(len(population)) if x >= len(pre_calc)]
+    #         scores = scores + scores_to_append
+
+    #     return scores
 
     def crossing_over(self, ind1, ind2, crossing_over_type):
         if crossing_over_type == 'punctual':
@@ -286,64 +302,82 @@ class GeneticAlgoBase:
         self.finish_time = datetime.now()
         self.exec_time = self.finish_time - self.start_time
 
-
     def execute(self):
         self.opt_cycle()
 
 class genetic_algo(GeneticAlgoBase):
-    def __init__(self, pose, opt_direction, gene_values, mutation_type, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, lista_fixed, cpus, tournament_size=2, esm_tmp=1.0, initial_population=[]):
-        super().__init__(opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, mutation_type, esm_tmp, initial_population, lista_fixed, tournament_size)
-        self.pose = pose
-        self.scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+    def __init__(self, pdb, opt_direction, gene_values, mutation_type, gene_type, vector_size, 
+                 threads, pop_size, mutation_rate, segment_fluctuation, apt_function, 
+                 selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, 
+                 tournament_cycles, file_name, lista_fixed, cpus, tournament_size=2, esm_tmp=1.0, initial_population=[]):
+        super().__init__(opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, 
+                         segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, 
+                         benchmark, crossing_over_type, tournament_cycles, file_name, mutation_type, esm_tmp, initial_population, lista_fixed, tournament_size)
+        self.pdb = pdb
         self.cpus = cpus
 
     def calculate_scores(self, population, pre_calc=[]):
+    # ...
+        print('CALCULATING SCORES!')
+        population_str = correct_multi_input(population)
 
-        if len(pre_calc) == 0:
+        # Prepara os argumentos para cada processo
+        # (index_cycle agora é passado para a função)
+        args_for_pool = [(seq, self.pdb, i, self.t) for i, seq in enumerate(population_str)]
 
-            if self.benchmark==True:
-                print('CALCULATING SCORES!')
-
-            #### Iterate over population and fill self.scores
-                scores = [self.apt_function(population[x]) for x in range(len(population))]
-
-            else:
-                if self.threads==False:
-                    print('CALCULATING SCORES!')
-
-                #### Iterate over population and fill self.scores
-                    #scores = [self.apt_function(population[x], self.pose, self.scorefxn, x, self.t) for x in range(len(population))]
-                    population = correct_multi_input(population)
-                    scores = batchs_to_run(self.pose, self.apt_function, population, self.cpus, self.t)
-                    #scores = self.apt_function(self.pose, population, self.dg_method, self.cpus, self.t)
-
-
-        if len(pre_calc) != 0:
-
-            if self.benchmark == True:
-                scores = list(pre_calc)
-                scores_to_append = [self.apt_function(population[x]) for x in range(len(population)) if x >= len(pre_calc)]
-                scores = scores + scores_to_append
-
-            else:
-
-                if self.threads == False:
-                    scores = list(pre_calc)
-                    scores_to_append = [self.apt_function(population[x], self.pose, self.scorefxn) for x in range(len(population)) if x >= len(pre_calc)]
-                    scores = scores + scores_to_append
-
-                if self.threads == True:
-                    scores = list(pre_calc)
-                    t1 = thread_rosetta([self.population[x] for x in range(len(population)) if x >= len(pre_calc)], self.pose, self.scorefxn, self.apt_function)
-                    t1.run()
-
-                    scores_to_append = [t1.return_results[x][0] for x in range(len(t1.return_results))]
-
-
-                scores = scores + scores_to_append
-
+        with Pool(processes=self.cpus) as pool:
+            # starmap desempacota os argumentos para a função
+            scores = pool.starmap(self.apt_function, args_for_pool)
 
         return scores
+
+    # def calculate_scores(self, population, pre_calc=[]):
+
+    #     if len(pre_calc) == 0:
+
+    #         if self.benchmark==True:
+    #             print('CALCULATING SCORES!')
+
+    #         #### Iterate over population and fill self.scores
+    #             scores = [self.apt_function(population[x]) for x in range(len(population))]
+
+    #         else:
+    #             if self.threads==False:
+    #                 print('CALCULATING SCORES!')
+
+    #             #### Iterate over population and fill self.scores
+    #                 #scores = [self.apt_function(population[x], self.pose, self.scorefxn, x, self.t) for x in range(len(population))]
+    #                 population = correct_multi_input(population)
+    #                 scores = batchs_to_run(self.pose, self.apt_function, population, self.cpus, self.t)
+    #                 #scores = self.apt_function(self.pose, population, self.dg_method, self.cpus, self.t)
+
+
+    #     if len(pre_calc) != 0:
+
+    #         if self.benchmark == True:
+    #             scores = list(pre_calc)
+    #             scores_to_append = [self.apt_function(population[x]) for x in range(len(population)) if x >= len(pre_calc)]
+    #             scores = scores + scores_to_append
+
+    #         else:
+
+    #             if self.threads == False:
+    #                 scores = list(pre_calc)
+    #                 scores_to_append = [self.apt_function(population[x], self.pose, self.scorefxn) for x in range(len(population)) if x >= len(pre_calc)]
+    #                 scores = scores + scores_to_append
+
+    #             if self.threads == True:
+    #                 scores = list(pre_calc)
+    #                 t1 = thread_rosetta([self.population[x] for x in range(len(population)) if x >= len(pre_calc)], self.pose, self.scorefxn, self.apt_function)
+    #                 t1.run()
+
+    #                 scores_to_append = [t1.return_results[x][0] for x in range(len(t1.return_results))]
+
+
+    #             scores = scores + scores_to_append
+
+
+    #     return scores
     
 class genetic_algo_sequence(GeneticAlgoBase):
     def __init__(self, opt_direction, gene_values, mutation_type, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, lista_fixed, tournament_size=2, esm_tmp=1.0, initial_population=[]):

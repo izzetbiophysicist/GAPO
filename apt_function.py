@@ -16,7 +16,7 @@ import csv
 import time
 import os
 from numpy.random import uniform
-from random import sample
+from random import sample, shuffle
 import numpy as np
 import multiprocessing
 from tqdm import tqdm
@@ -121,11 +121,83 @@ model.eval()  # disables dropout for deterministic results
 
 
 
-pyrosetta.init()
+# pyrosetta.init(extra_options="\
+#     -mute core \
+#     -mute basic \
+#     ")
 
 
-scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
+# scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
 
+#####
+
+def insert_mask(sequence, position, mask="<mask>"):
+    """
+    Replaces a character in a given position of a sequence with a mask.
+
+    Parameters:
+    - sequence (str or list): The sequence to replace the character in.
+    - position (int): The position in the sequence where the character should be replaced.
+    - mask (str): The mask to insert (default is "<mask>").
+
+    Returns:
+    - str or list: The sequence with the mask replacing the character at the specified position.
+    """
+    
+    if not (0 <= position < len(sequence)):
+        raise ValueError("Position is out of bounds.")
+    
+    if isinstance(sequence, str):
+        return sequence[:position] + mask + sequence[position + 1:]
+    elif isinstance(sequence, list):
+        return sequence[:position] + [mask] + sequence[position + 1:]
+    else:
+        raise TypeError("Sequence must be a string or list.")
+
+
+def complete_mask(input_sequence, posi, temperature=1.0):
+
+    standard_aa = [alphabet.get_idx(aa) for aa in ['A', 'R', 'N', 'D', 'C', 'Q', 
+                                                   'E', 'G', 'H', 'I', 'L', 'K', 
+                                                   'M', 'F', 'P', 'S', 'T', 'W', 
+                                                   'Y', 'V']]
+
+    data = [
+        ("protein1", insert_mask(input_sequence, posi, mask="<mask>"))]
+
+    batch_labels, batch_strs, batch_tokens = batch_converter(data)
+    batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
+
+    # Predict masked tokens
+    with torch.no_grad():
+        token_probs = model(batch_tokens, repr_layers=[33])["logits"]
+
+    # Apply temperature
+    token_probs /= temperature
+
+    softmax = torch.nn.Softmax(dim=-1)
+    probabilities = softmax(token_probs)
+
+    # Get the index of the <mask> token
+    mask_idx = (batch_tokens == alphabet.mask_idx).nonzero(as_tuple=True)
+
+        # Zero out probabilities for excluded tokens
+        
+    for token_idx in range(probabilities.size(-1)):
+        if token_idx not in standard_aa:
+            probabilities[:, :, token_idx] = 0.0
+
+    # Sample from the probability distribution
+    predicted_tokens = torch.multinomial(probabilities[mask_idx], num_samples=1).squeeze(-1)
+
+    # Replace the <mask> token with the predicted token
+    batch_tokens[mask_idx] = predicted_tokens
+
+    predicted_residues = [alphabet.get_tok(pred.item()) for pred in batch_tokens[0]]
+
+    seq_predicted = ''.join(predicted_residues[1:-1])
+
+    return seq_predicted
 
 #### FastRelax Protocol
 ####
@@ -368,7 +440,7 @@ def apt_pbee(seq, starting_pose, scorefxn, index_ind, index_cycle):
     data.to_csv(f'temp_{index_ind}.csv')
     return score
 
-def apt_rosetta(seq, starting_pose, scorefxn, index_ind, index_cycle):
+def apt_rosetta(seq, pdb, index_ind, index_cycle):
     """
     Perform threading optimization for a sequence.
 
@@ -382,6 +454,14 @@ def apt_rosetta(seq, starting_pose, scorefxn, index_ind, index_cycle):
     None (Result is stored in the returning_val list).
     """ 
     ###define starting pose outside of the function
+
+    pyrosetta.init(extra_options="\
+    -mute core \
+    -mute basic \
+    ")
+
+    starting_pose = pose_from_pdb(pdb)
+
     scorefxn = pyrosetta.create_score_function("ref2015_cart.wts")
     
     resids, index = Get_residues_from_pose(pose = starting_pose)
@@ -394,10 +474,10 @@ def apt_rosetta(seq, starting_pose, scorefxn, index_ind, index_cycle):
     new_pose = starting_pose.clone()  
     for index in to_mutate:
         new_pose = mutate_repack(starting_pose = new_pose, posi = index, amino = to_mutate[index], scorefxn = scorefxn)
-    new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
+    #new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
     new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
-    data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [scorefxn(new_pose)]})
-    data.to_csv(f'temp_{index_ind}.csv')
+    #data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [scorefxn(new_pose)]})
+    #data.to_csv(f'temp_{index_ind}.csv')
     return scorefxn(new_pose)
 
 def Compare_sequences(before_seq, after_seq, indexes):
@@ -421,6 +501,7 @@ def Compare_sequences(before_seq, after_seq, indexes):
             mutation[indexes[index]] = res2
             print(f"New mutation \U0001f600 : {res1}{indexes[index]}{res2}")
     return mutation
+
 def Get_residues_from_pose(pose):
     """
     Get the sequence and residue numbers for a specific chain in a given pose.
@@ -517,7 +598,24 @@ def retrieve_data(directory, file_list):
         dG.append(df_temp.iloc[0,2])
     return sequence, dG
 
+def generate_sequence(sequence, list_pos, temperature=1.5):
 
+    # shuffle works in-place and returns None, so we create a copy and shuffle it.
+    list_pos_copy = list_pos.copy()
+    shuffle(list_pos_copy)
+    new_sequence = sequence
+    for pos in list_pos_copy:
+        new_sequence = complete_mask(input_sequence=new_sequence, posi=pos, temperature=temperature)
+    return new_sequence
+
+def generate_population_esm(input_sequence, list_pos, population_size=50, temperature=1.5):
+    
+    population = set()
+    # Keep generating sequences until the set reaches the desired population size
+    while len(population) < population_size:
+        new_seq = generate_sequence(input_sequence, list_pos, temperature)
+        population.add(new_seq)
+    return list(population)
 
 def batchs_to_run(pose, apt_function, sequences, batch_size, index_cycle):
     list_seq_final = []
