@@ -95,22 +95,53 @@ Before you begin, ensure you have **Conda** installed on your system.
 
 GAPO is run from the command line, specifying the optimization mode (`structure` or `sequence`) and the desired parameters.
 
-## Algorithm Parameters ⚙️
+### Algorithm Parameters ⚙️
 
-| Parameter            | Description                                                                                             |
-| :------------------- | :------------------------------------------------------------------------------------------------------ |
-| `opt_direction`      | Sets the optimization direction: `up` (maximize) or `down` (minimize) the objective function.           |
-| `apt_function`       | Selects the objective function. E.g., `rosetta`, `esm`, `esm_penalty`, `esm_shannon_penalty`.           |
-| `gene_values`        | Values that genes can assume (typically the 20 amino acids).                                            |
-| `gene_type`          | Gene type: `discrete` (e.g., amino acids) or `continuous` (e.g., numerical values).                   |
-| `vector_size`        | The size of the genetic vector (protein sequence length).                                               |
-| `selection_method`   | Method for selecting individuals for the next generation. E.g., `tournament`.                           |
-| `crossing_over_type` | Type of genetic recombination (crossover) to be applied. E.g., `mask`.                                  |
-| `lista_fixed`        | A list of residue positions (indices) to keep fixed during evolution.                                   |
-| `initial_population` | Allows providing an initial population. If omitted, a random population will be generated.              |
-| `file_name`          | Name of the output file (`.csv`) to log the results of each generation.                                 |
-| `cpus`               | Number of CPU cores to use for parallelizing calculations.                                              |
+Abaixo estão os parâmetros de linha de comando para cada modo de operação do GAPO.
 
+#### Structure Mode Parameters
+
+##### **Parâmetros Obrigatórios**
+| Parâmetro            | Descrição                                                    |
+| :------------------- | :----------------------------------------------------------- |
+| `--pdb`              | O arquivo PDB de entrada para a otimização.                  |
+| `--residues_to_mute` | Lista dos índices dos resíduos (numeração PDB) a serem mutados. |
+
+##### **Parâmetros Opcionais**
+| Parâmetro         | Descrição                                                              | Valor Padrão (Default) |
+| :---------------- | :--------------------------------------------------------------------- | :--------------------- |
+| `--pop_size`      | Tamanho da população em cada geração.                                  | `50`                   |
+| `--cycles`        | Número de ciclos (gerações) do algoritmo genético.                     | `50`                   |
+| `--mutation_type` | Tipo de mutação a ser usada na otimização.                             | `esm`                  |
+| `--mutation_rate` | A taxa de mutação aplicada à população.                                | `0.9`                  |
+| `--direction`     | Direção da otimização: `up` (maximizar) ou `down` (minimizar).         | `down`                 |
+| `--apt_function`  | Função de aptidão a ser utilizada.                                     | `rosetta`              |
+| `--temp`          | Temperatura do ESM2 para controlar a aleatoriedade das mutações.       | `1.5`                  |
+| `--output_file`   | Nome base para o arquivo de saída.                                     | `gapo_results`         |
+| `--cpus`          | Número de CPUs para usar no processamento paralelo.                    | `1`                    |
+
+---
+
+#### Sequence Mode Parameters
+
+##### **Parâmetros Obrigatórios**
+| Parâmetro            | Descrição                                              |
+| :------------------- | :----------------------------------------------------- |
+| `--seq`              | A sequência de aminoácidos inicial para a otimização.  |
+| `--residues_to_mute` | Lista dos índices dos resíduos na sequência a serem mutados. |
+
+##### **Parâmetros Opcionais**
+| Parâmetro         | Descrição                                                              | Valor Padrão (Default) |
+| :---------------- | :--------------------------------------------------------------------- | :--------------------- |
+| `--pop_size`      | Tamanho da população em cada geração.                                  | `50`                   |
+| `--cycles`        | Número de ciclos (gerações) do algoritmo genético.                     | `50`                   |
+| `--mutation_type` | Tipo de mutação a ser usada na otimização.                             | `esm`                  |
+| `--mutation_rate` | A taxa de mutação aplicada à população.                                | `0.9`                  |
+| `--direction`     | Direção da otimização: `up` (maximizar) ou `down` (minimizar).         | `up`                   |
+| `--apt_function`  | Função de aptidão a ser utilizada.                                     | `esm`                  |
+| `--temp`          | Temperatura do ESM2 para controlar a aleatoriedade das mutações.       | `1.5`                  |
+| `--output_file`   | Nome base para o arquivo de saída.                                     | `gapo_results`         |
+| `--cpus`          | Número de CPUs para usar no processamento paralelo. 
 
 ### Example 1: Structure-Based Optimization
 
@@ -118,7 +149,7 @@ This example optimizes the CDRs of an scFv based on its PDB structure, using the
 
 ```bash
 python GAprot.py structure \
-    --pdb inputs/CD19_scFv_relax.pdb \
+    --pdb ab_trimed_relax.pdb \
     --fixed_residues 62 63 64 65 66 67 68 69 70 71 72 88 89 90 91 92 93 94 127 128 129 130 131 132 133 134 135 186 187 188 189 190 191 192 212 213 214 215 216 257 258 259 260 261 262 263 264 265 266 267 268 269 \
     --apt_function rosetta \
     --pop_size 50 \
