@@ -10,31 +10,34 @@ GAPO is a _in silico_ genetic algorithm used to optimize proteins for a desired 
 
 ## Getting started
 
-## Clone the reposity
+## Download & Install
+#### Step 1 - Install Conda (if not already installed)
+
+If Conda is not already installed on your system, follow the instructions below to download and install it:
+
+1. Visit the [Anaconda installation page](https://www.anaconda.com/download/success).
+2. Download the Anaconda installer for your operating system.
+3. Follow the installation instructions on the page to complete the setup.
+
+After installing Anaconda, you should be able to use `conda` commands in your terminal.
+
+#### Step 2 - Clone the repository
+
 ```
 git clone https://github.com/izzetbiophysicist/prot_eng_GA.git
 ```
-## Downloading pyRosetta
-First of all, you must download PyRosetta.
-<br />
-[PyRosetta4 Download](https://graylab.jhu.edu/download/PyRosetta4/archive/release/PyRosetta4.Release.python310.ubuntu/)
+#### Step 3 - Create pbee_env in Conda
+```
+cd prot_eng_GA
+conda env create -f environment.yml
+conda activate gapo_env
+```
+#### Step 4 - Install PyRosetta in gapo_env
+```
+pip install pyrosetta-installer
+python -c 'import pyrosetta_installer; pyrosetta_installer.install_pyrosetta()'
+```
 
-Additional help for downloading and installing and PyRosetta (source:Sari Sabban youtube channel )
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/UEaFmUMEL9c/0.jpg)](https://www.youtube.com/watch?v=UEaFmUMEL9c)
-
-## Creating a conda env to run GA
-```
-conda create --name GA_env --file requirements.txt
-```
-## Installing PyRosetta in Conda ENV
-### After downloading, unzip PyRosetta's and enter the setup directory to install it
-```
-tar -xvf PyRosetta4.Release.python310.linux.release-370.tar.bz2
-cd PyRosetta4.Release.python310.linux.release-370/setup
-conda activate GA_env
-python setup.py install
-```
 
 ## Running the code
 
