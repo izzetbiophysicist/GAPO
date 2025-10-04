@@ -23,9 +23,10 @@
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
+  - [Algorithm Parameters](#algorithm-parameters)
   - [Example 1: Structure-Based Optimization](#example-1-structure-based-optimization)
   - [Example 2: Sequence-Based Optimization](#example-2-sequence-based-optimization)
-  - [Algorithm Parameters](#algorithm-parameters)
+  
 - [Contributing](#contributing)
 
 ---
@@ -94,21 +95,7 @@ Before you begin, ensure you have **Conda** installed on your system.
 
 GAPO is run from the command line, specifying the optimization mode (`structure` or `sequence`) and the desired parameters.
 
-### Example 1: Structure-Based Optimization
-
-This example optimizes the CDRs of an scFv based on its PDB structure, using the Rosetta score as the objective function.
-
-```bash
-python GAprot.py structure \
-    --pdb inputs/CD19_scFv_relax.pdb \
-    --fixed_residues 62 63 64 65 66 67 68 69 70 71 72 88 89 90 91 92 93 94 127 128 129 130 131 132 133 134 135 186 187 188 189 190 191 192 212 213 214 215 216 257 258 259 260 261 262 263 264 265 266 267 268 269 \
-    --apt_function rosetta \
-    --pop_size 50 \
-    --cycles 10 \
-    --opt_direction down \
-    --output_file rosetta_run_01
-```
-### Algorithm Parameters ⚙️
+## Algorithm Parameters ⚙️
 
 | Parameter            | Description                                                                                             |
 | :------------------- | :------------------------------------------------------------------------------------------------------ |
@@ -123,6 +110,22 @@ python GAprot.py structure \
 | `initial_population` | Allows providing an initial population. If omitted, a random population will be generated.              |
 | `file_name`          | Name of the output file (`.csv`) to log the results of each generation.                                 |
 | `cpus`               | Number of CPU cores to use for parallelizing calculations.                                              |
+
+
+### Example 1: Structure-Based Optimization
+
+This example optimizes the CDRs of an scFv based on its PDB structure, using the Rosetta score as the objective function.
+
+```bash
+python GAprot.py structure \
+    --pdb inputs/CD19_scFv_relax.pdb \
+    --fixed_residues 62 63 64 65 66 67 68 69 70 71 72 88 89 90 91 92 93 94 127 128 129 130 131 132 133 134 135 186 187 188 189 190 191 192 212 213 214 215 216 257 258 259 260 261 262 263 264 265 266 267 268 269 \
+    --apt_function rosetta \
+    --pop_size 50 \
+    --cycles 10 \
+    --opt_direction down \
+    --output_file rosetta_run_01
+```
 
 ## Contributing
 
