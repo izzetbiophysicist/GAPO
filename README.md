@@ -26,12 +26,13 @@ After installing Anaconda, you should be able to use `conda` commands in your te
 ```
 git clone https://github.com/izzetbiophysicist/prot_eng_GA.git
 ```
-#### Step 3 - Create pbee_env in Conda
+#### Step 3 - Create gapo_env in Conda
 ```
 cd prot_eng_GA
 conda env create -f environment.yml
 conda activate gapo_env
 ```
+As a prerequisite, you must have PyTorch installed to use this repository. In order to install the right Pytorch version to your machine, please visit [Pytorch installation page](https://pytorch.org/get-started/locally/).
 #### Step 4 - Install PyRosetta in gapo_env
 ```
 pip install pyrosetta-installer
