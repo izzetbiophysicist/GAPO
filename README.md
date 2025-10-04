@@ -101,48 +101,53 @@ Abaixo estão os parâmetros de linha de comando para cada modo de operação do
 
 #### Structure Mode Parameters
 
-##### **Parâmetros Obrigatórios**
-| Parâmetro            | Descrição                                                    |
-| :------------------- | :----------------------------------------------------------- |
-| `--pdb`              | O arquivo PDB de entrada para a otimização.                  |
-| `--residues_to_mute` | Lista dos índices dos resíduos (numeração PDB) a serem mutados. |
+### Algorithm Parameters ⚙️
 
-##### **Parâmetros Opcionais**
-| Parâmetro         | Descrição                                                              | Valor Padrão (Default) |
-| :---------------- | :--------------------------------------------------------------------- | :--------------------- |
-| `--pop_size`      | Tamanho da população em cada geração.                                  | `50`                   |
-| `--cycles`        | Número de ciclos (gerações) do algoritmo genético.                     | `50`                   |
-| `--mutation_type` | Tipo de mutação a ser usada na otimização.                             | `esm`                  |
-| `--mutation_rate` | A taxa de mutação aplicada à população.                                | `0.9`                  |
-| `--direction`     | Direção da otimização: `up` (maximizar) ou `down` (minimizar).         | `down`                 |
-| `--apt_function`  | Função de aptidão a ser utilizada.                                     | `rosetta`              |
-| `--temp`          | Temperatura do ESM2 para controlar a aleatoriedade das mutações.       | `1.5`                  |
-| `--output_file`   | Nome base para o arquivo de saída.                                     | `gapo_results`         |
-| `--cpus`          | Número de CPUs para usar no processamento paralelo.                    | `1`                    |
+Below are the command-line parameters for each mode of operation in GAPO.
+
+#### Structure Mode Parameters
+
+##### **Required Parameters**
+| Parameter            | Description                                                 |
+| :------------------- | :---------------------------------------------------------- |
+| `--pdb`              | The input PDB file for the optimization.                    |
+| `--residues_to_mute` | List of residue indices (PDB numbering) to be mutated.      |
+
+##### **Optional Parameters**
+| Parameter         | Description                                                    | Default Value |
+| :---------------- | :------------------------------------------------------------- | :------------ |
+| `--pop_size`      | Size of the population in each generation.                     | `50`          |
+| `--cycles`        | Number of cycles (generations) for the genetic algorithm.      | `50`          |
+| `--mutation_type` | Type of mutation to be used during optimization.               | `esm`         |
+| `--mutation_rate` | The mutation rate applied to the population.                   | `0.9`         |
+| `--direction`     | Optimization direction: `up` (maximize) or `down` (minimize).  | `down`        |
+| `--apt_function`  | Aptitude function to be used.                                  | `rosetta`     |
+| `--temp`          | ESM2 temperature to control the randomness of mutations.       | `1.5`         |
+| `--output_file`   | Base name for the output file.                                 | `gapo_results`|
+| `--cpus`          | Number of CPUs to use for parallel processing.                 | `1`           |
 
 ---
 
 #### Sequence Mode Parameters
 
-##### **Parâmetros Obrigatórios**
-| Parâmetro            | Descrição                                              |
-| :------------------- | :----------------------------------------------------- |
-| `--seq`              | A sequência de aminoácidos inicial para a otimização.  |
-| `--residues_to_mute` | Lista dos índices dos resíduos na sequência a serem mutados. |
+##### **Required Parameters**
+| Parameter            | Description                                                      |
+| :------------------- | :------------------------------------------------------------- |
+| `--seq`              | The initial amino acid sequence for optimization.              |
+| `--residues_to_mute` | List of indices for the residues in the sequence to be mutated.|
 
-##### **Parâmetros Opcionais**
-| Parâmetro         | Descrição                                                              | Valor Padrão (Default) |
-| :---------------- | :--------------------------------------------------------------------- | :--------------------- |
-| `--pop_size`      | Tamanho da população em cada geração.                                  | `50`                   |
-| `--cycles`        | Número de ciclos (gerações) do algoritmo genético.                     | `50`                   |
-| `--mutation_type` | Tipo de mutação a ser usada na otimização.                             | `esm`                  |
-| `--mutation_rate` | A taxa de mutação aplicada à população.                                | `0.9`                  |
-| `--direction`     | Direção da otimização: `up` (maximizar) ou `down` (minimizar).         | `up`                   |
-| `--apt_function`  | Função de aptidão a ser utilizada.                                     | `esm`                  |
-| `--temp`          | Temperatura do ESM2 para controlar a aleatoriedade das mutações.       | `1.5`                  |
-| `--output_file`   | Nome base para o arquivo de saída.                                     | `gapo_results`         |
-| `--cpus`          | Número de CPUs para usar no processamento paralelo. 
-
+##### **Optional Parameters**
+| Parameter         | Description                                                    | Default Value |
+| :---------------- | :------------------------------------------------------------- | :------------ |
+| `--pop_size`      | Size of the population in each generation.                     | `50`          |
+| `--cycles`        | Number of cycles (generations) for the genetic algorithm.      | `50`          |
+| `--mutation_type` | Type of mutation to be used during optimization.               | `esm`         |
+| `--mutation_rate` | The mutation rate applied to the population.                   | `0.9`         |
+| `--direction`     | Optimization direction: `up` (maximize) or `down` (minimize).  | `up`          |
+| `--apt_function`  | Aptitude function to be used.                                  | `esm`         |
+| `--temp`          | ESM2 temperature to control the randomness of mutations.       | `1.5`         |
+| `--output_file`   | Base name for the output file.                                 | `gapo_results`|
+| `--cpus`          | Number of CPUs to use for parallel processing.  
 ### Example 1: Structure-Based Optimization
 
 This example optimizes the CDRs of an scFv based on its PDB structure, using the Rosetta score as the objective function.
