@@ -50,32 +50,46 @@ Before you begin, ensure you have **Conda** installed on your system.
 
 ### Installation
 
-1.  **Clone the repository:**
+1.  **Clone the Repository**
     ```sh
     git clone [https://github.com/izzetbiophysicist/prot_eng_GA.git](https://github.com/izzetbiophysicist/prot_eng_GA.git)
     cd prot_eng_GA
     ```
 
-2.  **Create the Conda environment:**
-    This command will create an environment named `gapo_env` with all the necessary dependencies listed in the `environment.yml` file.
+2.  **Create the Base Conda Environment**
+    This command uses the `environment.yml` file to create a new environment named `gapo_env` with all the base dependencies.
     ```sh
     conda env create -f environment.yml
     ```
 
-3.  **Activate the new environment:**
+3.  **Activate the New Environment**
     ```sh
     conda activate gapo_env
     ```
 
-4.  **Install PyRosetta:**
-    PyRosetta requires a license and is installed separately. The `pyrosetta-installer` simplifies this process.
+4.  **Install PyTorch (⚠️ Crucial Step)**
+    The `environment.yml` file **does not install PyTorch** to ensure you choose the correct version for your hardware. You must install it manually.
+
+    * **🚀 For NVIDIA GPU Users (Highly Recommended):**
+        Visit the **[Official PyTorch Website](https://pytorch.org/get-started/locally/)**. Select the settings that match your system (e.g., Conda, Python, your CUDA version) and run the generated command. It will look something like this:
+        ```sh
+        # This is an EXAMPLE command, get the correct one from the PyTorch website!
+        conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+        ```
+
+    * **💻 For CPU-Only Users:**
+        If you do not have a compatible GPU, install the CPU-only version of PyTorch with this command:
+        ```sh
+        conda install pytorch torchvision torchaudio cpuonly -c pytorch
+        ```
+
+5.  **Install PyRosetta**
+    Finally, install PyRosetta using its dedicated installer. This requires a license.
     ```sh
     pip install pyrosetta-installer
     python -c 'import pyrosetta_installer; pyrosetta_installer.install_pyrosetta()'
     ```
     
-    > **Note on PyTorch:** The `environment.yml` file installs a **CPU-only** version of PyTorch. If you have an NVIDIA GPU, it is highly recommended to visit the [**PyTorch installation page**](https://pytorch.org/get-started/locally/) to get the optimized installation command for your CUDA version and run it after activating the environment.
-
 ---
 
 ## Usage
