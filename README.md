@@ -161,7 +161,7 @@ python GA_main.py structure \
 This example takes an initial peptide sequence and evolves it to maximize its likelihood according to the ESM-2 model, mutating only the core region.
 
 ```bash
-python GAprot.py sequence \
+python GA_main.py sequence \
     --seq "RKVCNGIGIGEFKDSLSINATNIKHFKNCTSISGDLHILPVAFRGDSFTHTPPLDPQELDILKTVKEITGFLLIQAW" \
     --residues_to_mute 3 4 5 6 7 8 9 \
     --apt_function esm \
