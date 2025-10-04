@@ -95,7 +95,7 @@ Before you begin, ensure you have **Conda** installed on your system.
 
 GAPO is run from the command line, specifying the optimization mode (`structure` or `sequence`) and the desired parameters.
 
-### Algorithm Parameters ⚙️
+### Algorithm Parameters 
 
 Below are the command-line parameters for each mode of operation in GAPO.
 
