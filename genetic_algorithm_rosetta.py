@@ -306,14 +306,24 @@ class GeneticAlgoBase:
         self.opt_cycle()
 
 class genetic_algo(GeneticAlgoBase):
-    def __init__(self, pdb, opt_direction, gene_values, mutation_type, gene_type, vector_size, 
-                 threads, pop_size, mutation_rate, segment_fluctuation, apt_function, 
-                 selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, 
-                 tournament_cycles, file_name, lista_fixed, cpus, tournament_size=2, esm_tmp=1.0, initial_population=[]):
-        super().__init__(opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, 
-                         segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, 
-                         benchmark, crossing_over_type, tournament_cycles, file_name, mutation_type, esm_tmp, initial_population, lista_fixed, tournament_size)
-        self.pdb = pdb
+    """
+    This class handles structure-based genetic algorithm optimizations.
+    It inherits from the GeneticAlgoBase class and adds specific parameters
+    for handling Rosetta PDB files and parallelization.
+    """
+    def __init__(self, pdb, cpus, **kwargs):
+        
+        # Calls the constructor (__init__) of the parent class (GeneticAlgoBase).
+        # The **kwargs syntax unpacks a dictionary of keyword arguments.
+        # This allows us to pass all the general GA parameters (like opt_direction,
+        # pop_size, etc.) to the parent class without having to list them all here.
+        super().__init__(**kwargs)
+        
+        # Store the path to the PDB file. This is specific to the structure-based
+        # algorithm and will be used by the aptitude function in each worker process.
+        self.pdb = pdb  
+        
+        # Store the number of CPU cores to use for parallel processing.
         self.cpus = cpus
 
     def calculate_scores(self, population, pre_calc=[]):
@@ -380,10 +390,18 @@ class genetic_algo(GeneticAlgoBase):
     #     return scores
     
 class genetic_algo_sequence(GeneticAlgoBase):
-    def __init__(self, opt_direction, gene_values, mutation_type, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, lista_fixed, tournament_size=2, esm_tmp=1.0, initial_population=[]):
-        super().__init__(opt_direction, gene_values, gene_type, vector_size, threads, pop_size, mutation_rate, segment_fluctuation, apt_function, selection_method, convergence_threshold, n_cycles, benchmark, crossing_over_type, tournament_cycles, file_name, mutation_type, esm_tmp, initial_population, lista_fixed, tournament_size)
+    """
+    This class handles structure-based genetic algorithm optimizations.
+    It inherits from the GeneticAlgoBase class.
+    """
+    def __init__(self, **kwargs):
         
-
+        # Calls the constructor (__init__) of the parent class (GeneticAlgoBase).
+        # The **kwargs syntax unpacks a dictionary of keyword arguments.
+        # This allows us to pass all the general GA parameters (like opt_direction,
+        # pop_size, etc.) to the parent class without having to list them all here.
+        super().__init__(**kwargs)
+    
     def calculate_scores(self, population, pre_calc=[]):
 
         if len(pre_calc) == 0:
