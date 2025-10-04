@@ -474,7 +474,7 @@ def apt_rosetta(seq, pdb, index_ind, index_cycle):
     new_pose = starting_pose.clone()  
     for index in to_mutate:
         new_pose = mutate_repack(starting_pose = new_pose, posi = index, amino = to_mutate[index], scorefxn = scorefxn)
-    #new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
+    new_pose = pack_relax(starting_pose = new_pose, scorefxn = scorefxn, times_to_relax = 1)
     new_pose.dump_pdb(f"PDBs/{index_ind}_{index_cycle}.pdb")
     #data = pd.DataFrame({'Sequence': [new_pose.sequence()],'dG': [scorefxn(new_pose)]})
     #data.to_csv(f'temp_{index_ind}.csv')
