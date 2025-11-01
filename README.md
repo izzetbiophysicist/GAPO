@@ -26,14 +26,13 @@
   - [Algorithm Parameters](#algorithm-parameters)
   - [Example 1: Structure-Based Optimization](#example-1-structure-based-optimization)
   - [Example 2: Sequence-Based Optimization](#example-2-sequence-based-optimization)
- -[Preprint DOI](https://www.biorxiv.org/content/10.1101/2025.10.29.685431v1) 
 - [Contributing](#contributing)
 
 ---
 
 ## About The Project
 
-**GAPO** is an _in silico_ genetic algorithm used to optimize proteins for a desired function, such as stability and affinity. The algorithm mimics the evolutionary process by recombining and adding mutations to the best sequences in order to generate a new population with higher diversity and optimized for the given objective function.
+**GAPO** is an _in silico_ genetic algorithm used to optimize proteins for a desired function, such as stability and affinity. The algorithm mimics the evolutionary process by recombining and adding mutations to the best sequences in order to generate a new population with higher diversity and optimized for the given objective function. [Preprint DOI](https://www.biorxiv.org/content/10.1101/2025.10.29.685431v1) 
 
 ---
 
