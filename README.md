@@ -26,7 +26,7 @@
   - [Algorithm Parameters](#algorithm-parameters)
   - [Example 1: Structure-Based Optimization](#example-1-structure-based-optimization)
   - [Example 2: Sequence-Based Optimization](#example-2-sequence-based-optimization)
-  
+ -[Preprint DOI](https://www.biorxiv.org/content/10.1101/2025.10.29.685431v1) 
 - [Contributing](#contributing)
 
 ---
