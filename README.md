@@ -104,7 +104,7 @@ Below are the command-line parameters for each mode of operation in GAPO.
 | Parameter            | Description                                                 |
 | :------------------- | :---------------------------------------------------------- |
 | `--pdb`              | The input PDB file for the optimization.                    |
-| `--residues_to_mute` | List of residue indices (PDB numbering) to be mutated.      |
+| `--residues_to_mut` | List of residue indices (PDB numbering) to be mutated.      |
 
 ##### **Optional Parameters**
 | Parameter         | Description                                                    | Default Value |
@@ -127,7 +127,7 @@ Below are the command-line parameters for each mode of operation in GAPO.
 | Parameter            | Description                                                      |
 | :------------------- | :------------------------------------------------------------- |
 | `--seq`              | The initial amino acid sequence for optimization.              |
-| `--residues_to_mute` | List of indices for the residues in the sequence to be mutated.|
+| `--residues_to_mut` | List of indices for the residues in the sequence to be mutated.|
 
 ##### **Optional Parameters**
 | Parameter         | Description                                                    | Default Value |
@@ -148,7 +148,7 @@ This example optimizes the CDRs of an scFv based on its PDB structure, using the
 ```bash
 python GA_main.py structure \
     --pdb ab_trimed_relax.pdb \
-    --residues_to_mute 62 63 64 65 66 67 68 69 70 71 72 88 89 90 91 92 93 94 127 128 129 130 131 132 133 134 135 186 187 188 189 190 191 192 212 213 214 215 216 257 258 259 260 261 262 263 264 265 266 267 268 269 \
+    --residues_to_mut 62 63 64 65 66 67 68 69 70 71 72 88 89 90 91 92 93 94 127 128 129 130 131 132 133 134 135 186 187 188 189 190 191 192 212 213 214 215 216 257 258 259 260 261 262 263 264 265 266 267 268 269 \
     --apt_function rosetta \
     --pop_size 50 \
     --cycles 10 \
@@ -162,7 +162,7 @@ This example takes an initial peptide sequence and evolves it to maximize its li
 ```bash
 python GA_main.py sequence \
     --seq "RKVCNGIGIGEFKDSLSINATNIKHFKNCTSISGDLHILPVAFRGDSFTHTPPLDPQELDILKTVKEITGFLLIQAW" \
-    --residues_to_mute 3 4 5 6 7 8 9 \
+    --residues_to_mut 3 4 5 6 7 8 9 \
     --apt_function esm \
     --pop_size 100 \
     --cycles 20 \
