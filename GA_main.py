@@ -71,8 +71,8 @@ def main():
         
         starting_pose = pose_from_pdb(args.pdb)
         inds_sequence = list(range(1, len(starting_pose.sequence())+1))
-        init_pop = apt_function.generate_population_esm(starting_pose.sequence(), args.residues_to_mute, population_size=args.pop_size, temperature=args.temp)
-        fixed_residues = [i for i in inds_sequence if i not in args.residues_to_mute]
+        init_pop = apt_function.generate_population_esm(starting_pose.sequence(), args.residues_to_mut, population_size=args.pop_size, temperature=args.temp)
+        fixed_residues = [i for i in inds_sequence if i not in args.residues_to_mut]
 
         GA = genetic_algo(
             pdb=args.pdb, 
@@ -104,9 +104,9 @@ def main():
     elif args.command == "sequence":
         # Lógica para gerar população inicial de sequências
         starting_sequence = args.seq
-        init_pop = apt_function.generate_population_esm(starting_sequence, args.residues_to_mute, population_size=args.pop_size, temperature=args.temp)
+        init_pop = apt_function.generate_population_esm(starting_sequence, args.residues_to_mut, population_size=args.pop_size, temperature=args.temp)
         inds_sequence = list(range(1, len(starting_sequence)+1))
-        fixed_residues = [i for i in inds_sequence if i not in args.residues_to_mute]
+        fixed_residues = [i for i in inds_sequence if i not in args.residues_to_mut]
 
         GA = genetic_algo_sequence(
             opt_direction=args.direction,
