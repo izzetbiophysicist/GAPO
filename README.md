@@ -1,4 +1,4 @@
-# PREGA - PRotein Engerineering Genetic Algoritm (PREGA) 🧬
+# PREGA - PRotein Engerineering Genetic Algoritm 🧬
 
 <div align="center">
   <img src="./GAPO_logo.png" alt="GAPO Logo" width="400">
