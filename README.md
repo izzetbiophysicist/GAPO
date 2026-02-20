@@ -1,4 +1,4 @@
-# PREGA - PRotein Engineering Genetic Algorithm 🧬
+# GAPO - Genetic Algorithm for Protein Optimization 🧬
 
 <div align="center">
   <img src="./GAPO_logo.png" alt="GAPO Logo" width="400">
